@@ -71,9 +71,11 @@ void function_clear();
 void nameFile(struct dirent*, char*);
 void function_ls();
 void function_cat(char*);
+void function_rm(char* filename);
 void function_lsl();
 void function_cp(char*, char*);
-void function_wc(char *);
+void function_mv(char* source, char* destination);
+
 void function_grep(int argc, char *argv[]);
 void executable();
 void pipe_dup(int, instruction*);
@@ -174,8 +176,16 @@ int main(int argc, char* argv[])
         }
         else if (strcmp(argval[0], "grep") == 0 && !inBackground)
         {
-            function_grep(argcount, argval);
+            if (argcount > 1 && strlen(argval[1]) > 0)  // Check if filename is provided
+            {
+                function_grep(argcount, argval);  // Call the grep function
+            }
+            else
+            {
+                printf("grep: invalid file name: empty string\n");
+            }
         }
+
         else if (strcmp(argval[0], "wc") == 0 && !inBackground)
         {
             char* filename = argval[1];
@@ -188,6 +198,20 @@ int main(int argc, char* argv[])
                 printf("Error: Missing filename for wc command.\n");
             }
         }
+        else if (strcmp(argval[0], "mv") == 0 && !inBackground)
+        {
+            char* source = argval[1];
+            char* destination = argval[2];
+            if (argcount > 2 && strlen(source) > 0 && strlen(destination) > 0)
+            {
+                function_mv(source, destination);  // Call the mv function
+            }
+            else
+            {
+                printf("+--- Error in mv: insufficient parameters\n");
+            }
+        }
+
         else if (strcmp(argval[0], "cat") == 0 && !inBackground)
         {
             char* filename = argval[1];
@@ -200,6 +224,18 @@ int main(int argc, char* argv[])
                 printf("Error: Missing filename for cat command.\n");
             }
         }
+        else if (strcmp(argval[0], "rm") == 0 && !inBackground)
+        {
+            char* filename = argval[1];
+            if (argcount > 1 && strlen(filename) > 0)
+            {
+                function_rm(filename);  // Call the rm function
+            }
+            else
+            {
+                printf("+--- Error in rm: Missing filename\n");
+            }
+        }
         else
         {
             executable();
@@ -207,30 +243,56 @@ int main(int argc, char* argv[])
     }
 }
 
+void function_mv(char* source, char* destination)
+{
+    // Check if source file exists
+    if (access(source, F_OK) == -1) {
+        printf("+--- Error in mv: Source file does not exist\n");
+        return;
+    }
 
+    // Attempt to rename (move) the file
+    if (rename(source, destination) == 0) {
+        printf("+--- File moved successfully: %s -> %s\n", source, destination);
+    } else {
+        perror("+--- Error in mv: ");
+    }
+}
+
+
+void function_rm(char* filename)
+{
+    // Check if the file exists before attempting to remove it
+    if (access(filename, F_OK) == -1) {
+        printf("+--- Error in rm: File does not exist\n");
+        return;
+    }
+
+    // Attempt to remove the file
+    if (remove(filename) == 0) {
+        printf("+--- File removed successfully: %s\n", filename);
+    } else {
+        perror("+--- Error in rm: ");
+    }
+}
 
 void function_wc(char* filename) {
-    FILE *file = fopen(filename, "r");
+    FILE* file = fopen(filename, "r");
     if (file == NULL) {
-        fprintf(stderr, "wc: %s: No such file or directory\n", filename);
+        printf("Error: Cannot open file %s\n", filename);
         return;
     }
 
     int lines = 0, words = 0, bytes = 0;
-    char ch;
-    int inWord = 0;
+    char c;
+    int inWord = 0;  // Flag to track whether we are inside a word
 
-    // Read through the file character by character
-    while ((ch = fgetc(file)) != EOF) {
-        bytes++;  // Count every character for byte count
-
-        // Count lines
-        if (ch == '\n') {
+    while ((c = fgetc(file)) != EOF) {
+        bytes++;
+        if (c == '\n') {
             lines++;
         }
-
-        // Count words (words are separated by spaces, tabs, or newlines)
-        if (isspace(ch)) {
+        if (isspace(c)) {
             if (inWord) {
                 words++;
                 inWord = 0;
@@ -240,14 +302,15 @@ void function_wc(char* filename) {
         }
     }
 
-    // If the last word is not followed by a space, count it as well
     if (inWord) {
-        words++;
+        words++;  // For the last word in the file, if not followed by space
+    }
+     if (lines == 0 && bytes > 0) {
+        lines = 1;  // If there are bytes but no lines, it means there's at least one line
     }
 
     fclose(file);
 
-    // Print the result in the same format as Linux 'wc'
     printf("%d %d %d %s\n", lines, words, bytes, filename);
 }
 
@@ -569,7 +632,7 @@ void function_cp(char* file1, char* file2)
     {
         putc(cp,f2);
     }
-
+    printf("File copied from %s to %s\n", file1, file2);
     fclose(f1);
     fclose(f2);
 }
