@@ -20,6 +20,8 @@ static void freeproc(struct proc *p);
 
 extern char trampoline[]; // trampoline.S
 
+void sti(void);
+
 // helps ensure that wakeups of wait()ing
 // parents are not lost. helps obey the
 // memory model when using p->parent.
@@ -692,4 +694,28 @@ procdump(void)
     printf("%d %s %s", p->pid, state, p->name);
     printf("\n");
   }
+}
+
+ //current process status
+int
+cps()
+{
+struct proc *p;
+
+// Enable interrupts on this processor.
+sti();
+
+ // Loop over process table looking for process with pid.
+acquire(&wait_lock);
+printf("name \t pid \t state \n");
+for(p = proc; p < &proc[NPROC]; p++){
+   if ( p->state == SLEEPING )
+     printf("%s \t %d  \t SLEEPING \n ", p->name, p->pid );
+   else if ( p->state == RUNNING )
+     printf("%s \t %d  \t RUNNING \n", p->name, p->pid );
+}
+
+release(&wait_lock);
+
+return 22;
 }
