@@ -713,6 +713,12 @@ for(p = proc; p < &proc[NPROC]; p++){
      printf("%s \t %d  \t SLEEPING \n ", p->name, p->pid );
    else if ( p->state == RUNNING )
      printf("%s \t %d  \t RUNNING \n", p->name, p->pid );
+    else if ( p->state == RUNNABLE )
+      printf("%s \t %d  \t RUNNABLE \n", p->name, p->pid );
+      else if ( p->state == ZOMBIE )
+      printf("%s \t %d  \t ZOMBIE \n", p->name, p->pid );
+      else if ( p->state == USED )
+      printf("%s \t %d  \t USED \n", p->name, p->pid );
 }
 
 release(&wait_lock);
