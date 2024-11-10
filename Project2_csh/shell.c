@@ -11,6 +11,7 @@
 #include <pwd.h>
 #include <time.h>
 #include <fcntl.h>
+#include<signal.h>
 #define BUFSIZE 1000
 #define INPBUF 100
 #define ARGMAX 10
@@ -72,6 +73,8 @@ void function_ls();
 void function_cat(char*);
 void function_lsl();
 void function_cp(char*, char*);
+void function_wc(char *);
+void function_grep(int argc, char *argv[]);
 void executable();
 void pipe_dup(int, instruction*);
 void run_process(int, int, instruction*);
@@ -93,98 +96,213 @@ void stopSignal()
 
 int main(int argc, char* argv[])
 {
-    signal(SIGINT,stopSignal);
+    signal(SIGINT, stopSignal);
     int i;
     int pipe1 = pipe(fd);
     function_clear();
     screenfetch();
-    function_pwd(cwd,0);
+    function_pwd(cwd, 0);
 
-    while(exitflag==0)
+    while (exitflag == 0)
     {
-        externalIn = 0; externalOut = 0;inBackground = 0;
-        printf("%s%s ~> ",DEF,cwd ); //print user prompt
+        externalIn = 0;
+        externalOut = 0;
+        inBackground = 0;
+        printf("%s%s ~> ", DEF, cwd); // print user prompt
         // scanf("%s",input); - fails due to spaces, tabs
         getInput();
 
-        if(strcmp(argval[0],"exit")==0 || strcmp(argval[0],"z")==0)
+        if (strcmp(argval[0], "exit") == 0 || strcmp(argval[0], "z") == 0)
         {
             function_exit();
         }
-        else if(strcmp(argval[0],"screenfetch")==0 && !inBackground)
+        else if (strcmp(argval[0], "screenfetch") == 0 && !inBackground)
         {
             screenfetch();
         }
-        else if(strcmp(argval[0],"about")==0 && !inBackground)
+        else if (strcmp(argval[0], "about") == 0 && !inBackground)
         {
             about();
         }
-        else if(strcmp(argval[0],"pwd")==0 && !inBackground)
+        else if (strcmp(argval[0], "pwd") == 0 && !inBackground)
         {
-            function_pwd(cwd,1);
+            function_pwd(cwd, 1);
         }
-        else if(strcmp(argval[0],"cd")==0 && !inBackground)
+        else if (strcmp(argval[0], "cd") == 0 && !inBackground)
         {
             char* path = argval[1];
             function_cd(path);
         }
-        else if(strcmp(argval[0],"mkdir")==0 && !inBackground)
+        else if (strcmp(argval[0], "mkdir") == 0 && !inBackground)
         {
             char* foldername = argval[1];
             function_mkdir(foldername);
         }
-        else if(strcmp(argval[0],"rmdir")==0 && !inBackground)
+        else if (strcmp(argval[0], "rmdir") == 0 && !inBackground)
         {
             char* foldername = argval[1];
             function_rmdir(foldername);
         }
-        else if(strcmp(argval[0],"clear")==0 && !inBackground)
+        else if (strcmp(argval[0], "clear") == 0 && !inBackground)
         {
             function_clear();
         }
-        else if(strcmp(argval[0],"ls")==0 && !inBackground)
+        else if (strcmp(argval[0], "ls") == 0 && !inBackground)
         {
             char* optional = argval[1];
-            if(strcmp(optional,"-l")==0 && !inBackground)
+            if (strcmp(optional, "-l") == 0 && !inBackground)
             {
                 function_lsl();
             }
-            else function_ls();
+            else
+            {
+                function_ls();
+            }
         }
-        else if(strcmp(argval[0],"cp")==0 && !inBackground)
+        else if (strcmp(argval[0], "cp") == 0 && !inBackground)
         {
             char* file1 = argval[1];
             char* file2 = argval[2];
-            if(argcount > 2 && strlen(file1) > 0 && strlen(file2) > 0)
+            if (argcount > 2 && strlen(file1) > 0 && strlen(file2) > 0)
             {
-                function_cp(file1,file2);
+                function_cp(file1, file2);
             }
             else
             {
                 printf("+--- Error in cp : insufficient parameters\n");
             }
         }
-        else if(strcmp(argval[0],"cat")==0 && !inBackground)
+        else if (strcmp(argval[0], "grep") == 0 && !inBackground)
+        {
+            function_grep(argcount, argval);
+        }
+        else if (strcmp(argval[0], "wc") == 0 && !inBackground)
         {
             char* filename = argval[1];
             if (filename != NULL)
+            {
+                function_wc(filename);  // Call the wc function
+            }
+            else
+            {
+                printf("Error: Missing filename for wc command.\n");
+            }
+        }
+        else if (strcmp(argval[0], "cat") == 0 && !inBackground)
         {
-            function_cat(filename);
+            char* filename = argval[1];
+            if (filename != NULL)
+            {
+                function_cat(filename);
+            }
+            else
+            {
+                printf("Error: Missing filename for cat command.\n");
+            }
         }
-        else
-        {
-            printf("Error: Missing filename for cat command.\n");
-        }
-        }
-
         else
         {
             executable();
         }
+    }
+}
 
+
+
+void function_wc(char* filename) {
+    FILE *file = fopen(filename, "r");
+    if (file == NULL) {
+        fprintf(stderr, "wc: %s: No such file or directory\n", filename);
+        return;
     }
 
+    int lines = 0, words = 0, bytes = 0;
+    char ch;
+    int inWord = 0;
+
+    // Read through the file character by character
+    while ((ch = fgetc(file)) != EOF) {
+        bytes++;  // Count every character for byte count
+
+        // Count lines
+        if (ch == '\n') {
+            lines++;
+        }
+
+        // Count words (words are separated by spaces, tabs, or newlines)
+        if (isspace(ch)) {
+            if (inWord) {
+                words++;
+                inWord = 0;
+            }
+        } else {
+            inWord = 1;
+        }
+    }
+
+    // If the last word is not followed by a space, count it as well
+    if (inWord) {
+        words++;
+    }
+
+    fclose(file);
+
+    // Print the result in the same format as Linux 'wc'
+    printf("%d %d %d %s\n", lines, words, bytes, filename);
 }
+
+void function_grep(int argc, char *argv[]) {
+    // Ensure that there are at least 3 arguments (pattern and at least one file)
+    if (argc < 3) {
+        fprintf(stderr, "Usage: grep <pattern> <file1> [file2] ...\n");
+        return;
+    }
+
+    char *pattern = argv[1];  // The pattern to search for
+
+    // Iterate over the files
+    for (int i = 2; i < argc; i++) {
+        // Check if the file argument is an empty string
+        if (argv[i] == NULL || strlen(argv[i]) == 0) {
+            fprintf(stderr, "grep: invalid file name: empty string\n");
+            continue;  // Skip if file name is invalid
+        }
+
+        printf("Searching in file: %s\n", argv[i]);  // Debugging: print the current file name
+
+        FILE *file = fopen(argv[i], "r");
+
+        // Check if the file exists
+        if (file == NULL) {
+            fprintf(stderr, "grep: %s: No such file or directory\n", argv[i]);
+            continue;  // Skip to the next file if file does not exist
+        }
+
+        char line[1024];
+        int lineNumber = 1;  // Line counter for output
+        int found = 0;       // To check if the pattern is found in the file
+
+        // Read each line from the file
+        while (fgets(line, sizeof(line), file) != NULL) {
+            if (strstr(line, pattern) != NULL) {
+                // Print the matching line along with the filename and line number
+                printf("%s:%d: %s", argv[i], lineNumber, line);
+                found = 1;
+            }
+            lineNumber++;
+        }
+
+        if (!found) {
+            // If no match is found, we don't print anything for the file
+            // similar to the Linux 'grep' behavior
+        }
+
+        fclose(file);
+    }
+}
+
+
+
 
 
 void function_cat(char* filename) {
