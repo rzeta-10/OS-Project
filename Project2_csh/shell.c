@@ -69,6 +69,7 @@ void function_rmdir(char*);
 void function_clear();
 void nameFile(struct dirent*, char*);
 void function_ls();
+void function_cat(char*);
 void function_lsl();
 void function_cp(char*, char*);
 void executable();
@@ -87,6 +88,8 @@ void stopSignal()
 
     }
 }
+
+
 
 int main(int argc, char* argv[])
 {
@@ -161,6 +164,19 @@ int main(int argc, char* argv[])
                 printf("+--- Error in cp : insufficient parameters\n");
             }
         }
+        else if(strcmp(argval[0],"cat")==0 && !inBackground)
+        {
+            char* filename = argval[1];
+            if (filename != NULL)
+        {
+            function_cat(filename);
+        }
+        else
+        {
+            printf("Error: Missing filename for cat command.\n");
+        }
+        }
+
         else
         {
             executable();
@@ -168,6 +184,20 @@ int main(int argc, char* argv[])
 
     }
 
+}
+
+
+void function_cat(char* filename) {
+    FILE *file = fopen(filename, "r");
+    if (file == NULL) {
+        fprintf(stderr, "cat: %s: No such file or directory\n", filename);
+        return;
+    }
+    char line[1024];
+    while (fgets(line, sizeof(line), file) != NULL) {
+        printf("%s", line);
+    }
+    fclose(file);
 }
 
 
