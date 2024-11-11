@@ -2,8 +2,6 @@
 
 ---
 
-Here's the formatted group member section for your `README.md`:
-
 ---
 
 ## **Group Members** 👥
