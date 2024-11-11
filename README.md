@@ -1,116 +1,111 @@
-# OS-Project
+# Operating System Project 🚀
 
 ---
 
-# **Linux Command Implementation**
+## Group Members 👥 
 
-Welcome to the world of simple Linux commands implemented in C! This repository contains implementations for some of the most commonly used Linux commands, providing you with the functionality to execute them from your very own shell. Each command has been designed to mimic the behavior of the standard Linux commands.
+1. Rohan G - CS22B1093
 
----
+2. Reddipalli Sai Charish - CS22B1095
 
-## **Commands Implemented** 🔥
+3. Thumula Pratyek - CS22B1096
 
-### 1. **`ls` - List Directory Contents** 📂
-
-The `ls` command lists all the files and directories within your current working directory. By default, it shows a concise view. Use `ls -l` for a more detailed list with file permissions, ownership, and size.
-
-```bash
-$ ls
-```
-
-### 2. **`cat` - Concatenate and Display File Content** 📜
-
-The `cat` command is used to display the contents of a file. If the file is too large, it outputs the entire content at once. It can also be used to concatenate multiple files into one.
-
-```bash
-$ cat 3.txt
-Hello Rohan!
-```
-
-### 3. **`grep` - Search for Patterns in Files** 🔍
-
-With `grep`, you can search through the contents of files for a specific pattern. It supports regular expressions and returns all matching lines.
-
-```bash
-$ grep "Rohan" 3.txt
-Hello Rohan!
-```
-
-**Use case**: Searching for a keyword inside files across directories.
-
-### 4. **`wc` - Word, Line, and Character Count** 📏
-
-The `wc` command gives you the word, line, and character count of a file. A powerful tool when you need quick file statistics.
-
-```bash
-$ wc 3.txt
-0 2 11 3.txt
-```
-
-**Details**:  
-- **0** = Number of lines
-- **2** = Number of words
-- **11** = Number of characters
-
-### 5. **`cp` - Copy Files** 📤
-
-The `cp` command copies a file from a source to a destination. It’s like creating a backup or transferring a file to a different location.
-
-```bash
-$ cp source.txt destination.txt
-File copied from source.txt to destination.txt
-```
-
-**Use case**:  
-Create a backup of important files.
-
-### 6. **`mv` - Move or Rename Files** 📦
-
-With `mv`, you can move a file to another directory or rename it. If the destination is a directory, it moves the file to that directory; otherwise, it renames the file.
-
-```bash
-$ mv oldname.txt newname.txt
-```
-
-**Use case**:  
-Organize files by renaming or moving them to different directories.
-
-### 7. **`rm` - Remove Files or Directories** 🗑️
-
-The `rm` command is used to remove files or directories. Be cautious, as deleted files cannot be easily recovered. Use `rm -r` to delete directories recursively.
-
-```bash
-$ rm unwantedfile.txt
-```
-
-### **Features and How to Use** 💻
-
-These commands are implemented directly in C and can be executed in your terminal. To use them:
-
-1. Clone the repository:
-    ```bash
-    git clone https://github.com/yourusername/linux-commands.git
-    ```
-
-2. Navigate to the project directory:
-    ```bash
-    cd linux-commands
-    ```
-
-3. Compile the program:
-    ```bash
-    gcc -o shell shell.c
-    ```
-
-4. Run your shell:
-    ```bash
-    ./shell
-    ```
+4. G Vivek Vardhan Reddy - CS22B1097
 
 ---
 
-## **Feel free to contribute!** 🚀
+# Question 1: 
 
-If you have any suggestions, bugs to report, or improvements to propose, please open an issue or create a pull request. Let's build a better shell together!
+## On Progress ⏳
+
+---
+
+# Question 2: UNIX-like shell program
+
+# 🐚 `csh` - A Custom Shell in C
+
+Welcome to **`csh`**, a custom shell written in C that brings the power of basic UNIX-like commands right to your fingertips! Designed to provide a smooth and intuitive command-line experience, `csh` supports essential file and text manipulation commands, making it a great project for exploring low-level system programming.
+
+## ✨ Features
+
+- **Built-in Commands**: 
+  - **`ls`** - List directory contents
+  - **`cat`** - Display file contents
+  - **`grep`** - Search for patterns within files
+  - **`wc`** - Count words, lines, and characters in files
+  - **`mv`** - Move or rename files
+  - **`rm`** - Remove files
+
+## 🚀 Getting Started
+
+To try out `csh`, clone the repository and compile the code as follows:
+
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/csh.git
+cd csh
+
+# Compile the shell program
+make
+
+# Run the shell
+./csh
+```
+
+## 🛠️ Usage
+
+Once `csh` is running, you can start using the supported commands just as you would in a typical UNIX shell. Here are a few examples with images of each command in action:
+
+### `ls` - List directory contents
+```bash
+ls
+```
+![ls command output](Project2_Csh/images/image.png)
+
+### `cat` - Display contents of a file
+```bash
+cat filename.txt
+```
+![cat command output](Project2_Csh/images/cat.png)
+
+### `grep` - Search for patterns within files
+```bash
+grep 'pattern' filename.txt
+```
+![grep command output](Project2_Csh/images/grep.png)
+
+### `wc` - Count lines, words, and characters in a file
+```bash
+wc filename.txt
+```
+![wc command output](Project2_Csh/images/wc.png)
+
+### `mv` - Move or rename a file
+```bash
+mv oldname.txt newname.txt
+```
+![mv command output](Project2_Csh/images/mv.png)
+
+### `rm` - Delete a file
+```bash
+rm filename.txt
+```
+![rm command output](Project2_Csh/images/rm.png)
+
+## 📚 Project Structure
+
+- **`main.c`** - Launches a new terminal instance and executes the custom shell `shell.c`
+- **`shell.c`** - Core implementation of the shell.
+- **`Makefile`** - For building the project with ease.
+- **`README.md`** - You’re reading it!
+
+## 🤖 Built With
+
+- **C** - For low-level system programming and managing system calls.
+- **UNIX System Calls** - For executing commands, handling files, and managing processes.
+
+## 💡 Why `csh`?
+
+This project is a deep dive into understanding how a shell operates at a fundamental level, making it a great hands-on experience with system-level programming. It’s compact, practical, and covers essential shell functionality, perfect for anyone curious about what goes on behind the scenes of a command-line interface.
 
 ---
