@@ -2,15 +2,18 @@
 
 ---
 
-## Group Members 👥 
+Here's the formatted group member section for your `README.md`:
 
-1. Rohan G - CS22B1093
+---
 
-2. Reddipalli Sai Charish - CS22B1095
+## **Group Members** 👥
 
-3. Thumula Pratyek - CS22B1096
+- **Rohan G** - CS22B1093  
+- **Reddipalli Sai Charish** - CS22B1095  
+- **Thumula Pratyek** - CS22B1096  
+- **G Vivek Vardhan Reddy** - CS22B1097  
 
-4. G Vivek Vardhan Reddy - CS22B1097
+---
 
 ---
 
