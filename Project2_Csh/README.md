@@ -72,6 +72,7 @@ rm filename.txt
 
 ## 📚 Project Structure
 
+- **`main.c`** - Launches a new terminal instance and executes the custom shell `shell.c`
 - **`shell.c`** - Core implementation of the shell.
 - **`Makefile`** - For building the project with ease.
 - **`README.md`** - You’re reading it!
