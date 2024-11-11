@@ -1,7 +1,5 @@
 # OS-Project
 
-Here’s a stylish and engaging GitHub README for the execution of the listed commands:
-
 ---
 
 # **Linux Command Implementation**
@@ -116,11 +114,3 @@ These commands are implemented directly in C and can be executed in your termina
 If you have any suggestions, bugs to report, or improvements to propose, please open an issue or create a pull request. Let's build a better shell together!
 
 ---
-
-## **License** 📝
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
-
-**Happy Hacking!** ✨
