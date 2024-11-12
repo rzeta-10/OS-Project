@@ -17,6 +17,20 @@
 
 # Question 1: 
 
+## 🚀 Getting Started
+
+To try out `xv6CustomizeSystemCalls`, clone the repository and compile the code as follows:
+
+```bash
+# Clone the repository
+git clone https://github.com/rzeta-10/OS-Project.git
+cd Project1_xv6CustomizeSystemCalls
+
+# Compile xv6
+make qemu
+
+```
+
 ### `ps` - List Process Status
 ```bash
 ps
@@ -47,7 +61,7 @@ Welcome to **`csh`**, a custom shell written in C that brings the power of basic
 
 ## 🚀 Getting Started
 
-To try out `csh`, clone the repository and compile the code as follows:
+To try out `Csh`, clone the repository and compile the code as follows:
 
 ```bash
 # Clone the repository
@@ -55,10 +69,11 @@ git clone https://github.com/rzeta-10/OS-Project.git
 cd Project2_Csh
 
 # Compile the shell program
+make clean
 make
 
 # Run the shell
-./csh
+./cshell
 ```
 
 ## 🛠️ Usage
