@@ -941,10 +941,10 @@ uptime:
  ret
  570:	8082                	ret
 
-0000000000000572 <cps>:
-.global cps
-cps:
- li a7, SYS_cps
+0000000000000572 <ps>:
+.global ps
+ps:
+ li a7, SYS_ps
  572:	48d9                	li	a7,22
  ecall
  574:	00000073          	ecall

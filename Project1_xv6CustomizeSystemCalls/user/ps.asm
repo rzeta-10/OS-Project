@@ -15,8 +15,8 @@ main(int argc, char *argv[])
    2:	e406                	sd	ra,8(sp)
    4:	e022                	sd	s0,0(sp)
    6:	0800                	addi	s0,sp,16
-cps();
-   8:	314000ef          	jal	31c <cps>
+ps();
+   8:	314000ef          	jal	31c <ps>
 
 exit(0);
    c:	4501                	li	a0,0
@@ -665,10 +665,10 @@ uptime:
  ret
  31a:	8082                	ret
 
-000000000000031c <cps>:
-.global cps
-cps:
- li a7, SYS_cps
+000000000000031c <ps>:
+.global ps
+ps:
+ li a7, SYS_ps
  31c:	48d9                	li	a7,22
  ecall
  31e:	00000073          	ecall

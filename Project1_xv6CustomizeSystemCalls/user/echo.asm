@@ -711,10 +711,10 @@ uptime:
  ret
  382:	8082                	ret
 
-0000000000000384 <cps>:
-.global cps
-cps:
- li a7, SYS_cps
+0000000000000384 <ps>:
+.global ps
+ps:
+ li a7, SYS_ps
  384:	48d9                	li	a7,22
  ecall
  386:	00000073          	ecall

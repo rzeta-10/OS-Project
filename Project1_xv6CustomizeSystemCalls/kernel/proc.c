@@ -698,7 +698,7 @@ procdump(void)
 
  //current process status
 int
-cps()
+ps()
 {
 struct proc *p;
 

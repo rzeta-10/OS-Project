@@ -779,10 +779,10 @@ uptime:
  ret
  3f2:	8082                	ret
 
-00000000000003f4 <cps>:
-.global cps
-cps:
- li a7, SYS_cps
+00000000000003f4 <ps>:
+.global ps
+ps:
+ li a7, SYS_ps
  3f4:	48d9                	li	a7,22
  ecall
  3f6:	00000073          	ecall

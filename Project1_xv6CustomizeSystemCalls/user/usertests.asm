@@ -8815,10 +8815,10 @@ uptime:
  ret
     4b1e:	8082                	ret
 
-0000000000004b20 <cps>:
-.global cps
-cps:
- li a7, SYS_cps
+0000000000004b20 <ps>:
+.global ps
+ps:
+ li a7, SYS_ps
     4b20:	48d9                	li	a7,22
  ecall
     4b22:	00000073          	ecall

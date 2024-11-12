@@ -1964,10 +1964,10 @@ uptime:
  ret
      c9a:	8082                	ret
 
-0000000000000c9c <cps>:
-.global cps
-cps:
- li a7, SYS_cps
+0000000000000c9c <ps>:
+.global ps
+ps:
+ li a7, SYS_ps
      c9c:	48d9                	li	a7,22
  ecall
      c9e:	00000073          	ecall

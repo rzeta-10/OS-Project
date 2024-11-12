@@ -670,10 +670,10 @@ uptime:
  ret
  326:	8082                	ret
 
-0000000000000328 <cps>:
-.global cps
-cps:
- li a7, SYS_cps
+0000000000000328 <ps>:
+.global ps
+ps:
+ li a7, SYS_ps
  328:	48d9                	li	a7,22
  ecall
  32a:	00000073          	ecall

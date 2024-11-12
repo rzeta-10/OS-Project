@@ -105,8 +105,8 @@ uptime:
  li a7, SYS_uptime
  ecall
  ret
-.global cps
-cps:
- li a7, SYS_cps
+.global ps
+ps:
+ li a7, SYS_ps
  ecall
  ret

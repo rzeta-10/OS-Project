@@ -1737,10 +1737,10 @@ uptime:
  ret
      bec:	8082                	ret
 
-0000000000000bee <cps>:
-.global cps
-cps:
- li a7, SYS_cps
+0000000000000bee <ps>:
+.global ps
+ps:
+ li a7, SYS_ps
      bee:	48d9                	li	a7,22
  ecall
      bf0:	00000073          	ecall

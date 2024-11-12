@@ -5212,11 +5212,11 @@ procdump(void)
     8000233e:	6161                	addi	sp,sp,80
     80002340:	8082                	ret
 
-0000000080002342 <cps>:
+0000000080002342 <ps>:
 
  //current process status
 int
-cps()
+ps()
 {
     80002342:	711d                	addi	sp,sp,-96
     80002344:	ec86                	sd	ra,88(sp)
@@ -5277,17 +5277,17 @@ for(p = proc; p < &proc[NPROC]; p++){
      printf("%s \t %d  \t SLEEPING \n ", p->name, p->pid );
     800023b2:	00005a97          	auipc	s5,0x5
     800023b6:	f16a8a93          	addi	s5,s5,-234 # 800072c8 <etext+0x2c8>
-    800023ba:	a811                	j	800023ce <cps+0x8c>
+    800023ba:	a811                	j	800023ce <ps+0x8c>
     800023bc:	ed84a603          	lw	a2,-296(s1)
     800023c0:	8556                	mv	a0,s5
     800023c2:	900fe0ef          	jal	800004c2 <printf>
 for(p = proc; p < &proc[NPROC]; p++){
     800023c6:	16848493          	addi	s1,s1,360
-    800023ca:	05448663          	beq	s1,s4,80002416 <cps+0xd4>
+    800023ca:	05448663          	beq	s1,s4,80002416 <ps+0xd4>
    if ( p->state == SLEEPING )
     800023ce:	85a6                	mv	a1,s1
     800023d0:	ec04a783          	lw	a5,-320(s1)
-    800023d4:	fef9e9e3          	bltu	s3,a5,800023c6 <cps+0x84>
+    800023d4:	fef9e9e3          	bltu	s3,a5,800023c6 <ps+0x84>
     800023d8:	ec04e783          	lwu	a5,-320(s1)
     800023dc:	078a                	slli	a5,a5,0x2
     800023de:	97ca                	add	a5,a5,s2
@@ -5298,22 +5298,22 @@ for(p = proc; p < &proc[NPROC]; p++){
     800023e6:	ed84a603          	lw	a2,-296(s1)
     800023ea:	855a                	mv	a0,s6
     800023ec:	8d6fe0ef          	jal	800004c2 <printf>
-    800023f0:	bfd9                	j	800023c6 <cps+0x84>
+    800023f0:	bfd9                	j	800023c6 <ps+0x84>
       printf("%s \t %d  \t RUNNABLE \n", p->name, p->pid );
     800023f2:	ed84a603          	lw	a2,-296(s1)
     800023f6:	855e                	mv	a0,s7
     800023f8:	8cafe0ef          	jal	800004c2 <printf>
-    800023fc:	b7e9                	j	800023c6 <cps+0x84>
+    800023fc:	b7e9                	j	800023c6 <ps+0x84>
       printf("%s \t %d  \t ZOMBIE \n", p->name, p->pid );
     800023fe:	ed84a603          	lw	a2,-296(s1)
     80002402:	8562                	mv	a0,s8
     80002404:	8befe0ef          	jal	800004c2 <printf>
-    80002408:	bf7d                	j	800023c6 <cps+0x84>
+    80002408:	bf7d                	j	800023c6 <ps+0x84>
       printf("%s \t %d  \t USED \n", p->name, p->pid );
     8000240a:	ed84a603          	lw	a2,-296(s1)
     8000240e:	8566                	mv	a0,s9
     80002410:	8b2fe0ef          	jal	800004c2 <printf>
-    80002414:	bf4d                	j	800023c6 <cps+0x84>
+    80002414:	bf4d                	j	800023c6 <ps+0x84>
 }
 
 release(&wait_lock);
@@ -6048,7 +6048,7 @@ argstr(int n, char *buf, int max)
     800028f6:	8082                	ret
 
 00000000800028f8 <syscall>:
-[SYS_cps]     sys_cps,
+[SYS_ps]     sys_ps,
 };
 
 void
@@ -6370,17 +6370,17 @@ sys_uptime(void)
     80002afa:	6105                	addi	sp,sp,32
     80002afc:	8082                	ret
 
-0000000080002afe <sys_cps>:
+0000000080002afe <sys_ps>:
 
 uint64
-sys_cps ( void )
+sys_ps ( void )
 {
     80002afe:	1141                	addi	sp,sp,-16
     80002b00:	e406                	sd	ra,8(sp)
     80002b02:	e022                	sd	s0,0(sp)
     80002b04:	0800                	addi	s0,sp,16
-return cps ();
-    80002b06:	83dff0ef          	jal	80002342 <cps>
+return ps ();
+    80002b06:	83dff0ef          	jal	80002342 <ps>
 }  
     80002b0a:	60a2                	ld	ra,8(sp)
     80002b0c:	6402                	ld	s0,0(sp)

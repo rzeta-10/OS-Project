@@ -93,7 +93,7 @@ sys_uptime(void)
 }
 
 uint64
-sys_cps ( void )
+sys_ps ( void )
 {
-return cps ();
+return ps ();
 }  
