@@ -61,7 +61,7 @@ wc filename.txt
 ```bash
 mv oldname.txt newname.txt
 ```
-![mv command output](images/mv.png)
+![mv command output](images/mv_1.png)
 
 ### `rm` - Delete a file
 ```bash
