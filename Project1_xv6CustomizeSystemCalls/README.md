@@ -53,7 +53,11 @@ sys_ps ( void )
    ### Add call to `usys.S`:
    
    ```
-    SYS_ps
+  .global ps
+ps:
+ li a7, SYS_ps
+ ecall
+ ret
    ```
        
   ### Add call to `syscall.c`:
