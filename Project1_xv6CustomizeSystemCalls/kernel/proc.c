@@ -7,6 +7,10 @@
 #include "defs.h"
 
 struct cpu cpus[NCPU];
+struct {
+  struct spinlock lock;
+  struct proc proc[NPROC];
+} ptable;
 
 struct proc proc[NPROC];
 
@@ -725,3 +729,48 @@ release(&wait_lock);
 
 return 22;
 }
+
+int fork_with_priority(int priority) {
+    struct proc *np;
+    struct proc *curproc = myproc();
+
+    // Allocate a new process. This function acquires the process lock.
+    if ((np = allocproc()) == 0)
+        return -1;
+
+    // Copy the parent process's address space to the child.
+    if (uvmcopy(curproc->pagetable, np->pagetable, curproc->sz) < 0) {
+        freeproc(np);
+        return -1;
+    }
+
+    // Set up the new process's state based on the parent process.
+    np->sz = curproc->sz;
+    np->parent = curproc;
+    *np->trapframe = *curproc->trapframe; // Copy the trapframe
+
+    // Set the priority for the new process.
+    np->priority = priority;
+
+    // Copy file descriptors from parent to child.
+    for (int i = 0; i < NOFILE; i++) {
+        if (curproc->ofile[i])
+            np->ofile[i] = filedup(curproc->ofile[i]);
+    }
+
+    // Copy the current working directory.
+    np->cwd = idup(curproc->cwd);
+    safestrcpy(np->name, curproc->name, sizeof(curproc->name));
+
+    int pid = np->pid;
+
+    // The process lock is already held here (from allocproc), so we just set the state.
+    np->state = RUNNABLE;
+
+    // Release the lock before returning.
+    release(&np->lock);
+
+    return pid;
+}
+
+

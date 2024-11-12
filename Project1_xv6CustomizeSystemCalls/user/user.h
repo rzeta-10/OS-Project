@@ -23,6 +23,7 @@ int getpid(void);
 char* sbrk(int);
 int sleep(int);
 int uptime(void);
+int fork2(int priority);
 
 // ulib.c
 int stat(const char*, struct stat*);
@@ -33,12 +34,19 @@ int strcmp(const char*, const char*);
 void fprintf(int, const char*, ...) __attribute__ ((format (printf, 2, 3)));
 void printf(const char*, ...) __attribute__ ((format (printf, 1, 2)));
 char* gets(char*, int max);
-uint strlen(const char*);
-void* memset(void*, int, uint);
+//uint strlen(const char*);
+//void* memset(void*, int, uint);
 int atoi(const char*);
-int memcmp(const void *, const void *, uint);
-void *memcpy(void *, const void *, uint);
+//int memcmp(const void *, const void *, uint);
+//void *memcpy(void *, const void *, uint);
 
 // umalloc.c
-void* malloc(uint);
+//void* malloc(uint);
 void free(void*);
+
+unsigned int strlen(const char*);
+void* memset(void*, int, unsigned int);
+int memcmp(const void*, const void*, unsigned int);
+void* memcpy(void*, const void*, unsigned int);
+void* malloc(unsigned int);
+

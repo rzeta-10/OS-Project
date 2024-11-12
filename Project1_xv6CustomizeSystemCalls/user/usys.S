@@ -110,3 +110,8 @@ ps:
  li a7, SYS_ps
  ecall
  ret
+.global fork2
+fork2:
+ li a7, SYS_fork2
+ ecall
+ ret
