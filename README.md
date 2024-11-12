@@ -197,6 +197,13 @@ ls
 ```
 ![ls command output](Project2_Csh/images/ls_2.png)
 
+
+### `ls -l` - List directory contents with detailed information
+```bash
+ls -l
+```
+![ls -l command output](images/ls_l.png)
+
 ### `cat` - Display contents of a file
 ```bash
 cat filename.txt
