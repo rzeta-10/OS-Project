@@ -114,7 +114,7 @@ mv oldname.txt newname.txt
 ```bash
 rm filename.txt
 ```
-![rm command output](Project2_Csh/images/rm.png)
+![rm command output](Project2_Csh/images/rm_1.png)
 
 ### `date` - Display the current date and time
 ```bash
