@@ -17,6 +17,12 @@
 
 # Question 1: 
 
+### `ps` - List Process Status
+```bash
+ps
+```
+![ps command output](Project1_xv6CustomizeSystemCalls/images/ps.png)
+
 ## On Progress ⏳
 
 ---
