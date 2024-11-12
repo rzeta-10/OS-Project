@@ -129,6 +129,6 @@ exit(0);
 ```bash
 ps
 ```
-![ps command output](Project1_xv6CustomizeSystemCalls/images/ps.png)
+![ps command output](images/ps.png)
 
 ---
