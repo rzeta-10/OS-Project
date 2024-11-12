@@ -32,7 +32,7 @@ make qemu
 ```
 ### The following are the procedures of adding our exemplary system call ps() to xv6.
 
- - Add name to `syscall.h`:
+ ### Add name to `syscall.h`:
  
  ``` 
  // System call numbers
@@ -41,7 +41,7 @@ make qemu
 #define SYS_close  21
 #define SYS_ps    22
  ``` 
-  - Add function prototype to `defs.h`:
+  ### Add function prototype to `defs.h`:
   ``` 
   // proc.c
 void            exit(void);
@@ -50,7 +50,7 @@ void            yield(void);
 int             ps ( void ); 
   ```   
  
- - Add function prototype to `user.h`:
+ ### Add function prototype to `user.h`:
   ``` 
     // system calls
 int fork(void);
@@ -59,7 +59,7 @@ int uptime(void);
 int ps ( void );
    ``` 
      
-  - Add function call to `sysproc.c`:
+  ### Add function call to `sysproc.c`:
   
    ``` 
 uint64
@@ -69,13 +69,13 @@ sys_ps ( void )
 }  
    ```
         
-   - Add call to `usys.S`:
+   ### Add call to `usys.S`:
    
    ```
     SYS_ps
    ```
        
-   - Add call to `syscall.c`:
+  ### Add call to `syscall.c`:
    
    ```   
 extern int sys_chdir(void);
@@ -91,7 +91,7 @@ static int (*syscalls[])(void) = {
    ```
      
      
-   - Add code to `proc.c`:
+   ### Add code to `proc.c`:
     
    ``` 
     //current process status
@@ -126,7 +126,7 @@ return 22;
 
    ``` 
  
-  - Create testing file `ps.c` with code shown below:
+  ### Create testing file `ps.c` with code shown below:
    ```
 #include "kernel/types.h"
 #include "kernel/stat.h"
