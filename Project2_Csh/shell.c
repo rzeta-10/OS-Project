@@ -20,7 +20,12 @@
 #define BLUE "\x1b[94m"
 #define DEF "\x1B[0m"
 #define CYAN "\x1b[96m"
+#define RESET "\x1b[0m"
+#define RED "\x1b[91m"
+#define YELLOW "\x1b[93m"
 #ifndef DT_REG
+
+
 #define DT_REG 8  // Value for regular files
 #endif
 
@@ -28,29 +33,6 @@
 #define DT_DIR 4  // Value for directories
 #endif
 
-// colour guide - https://github.com/shiena/ansicolor/blob/master/README.md
-/*
-* Usage - make clean ; clear ; make ; ./Cshell
-*/
-/* implement shell functions
-*/
-/* Instructions to support :
-*  cd <dir>                                 - Done cd
-*  pwd                                      - Done pwd
-*  mkdir <dir>                              - Done mkdir
-*  rmdir <dir>                              - Done rmdir
-*  ls (support ls -l)                       - Done ls & -l
-*  cp <file1> <file2>                       - Done cp
-*  exit                                     - Done exit
-*  execute any other command like ./a.out   - Done exec
-* support background execution - &          - Done &
-* redirect input output >, <                - Done
-*  a.out | b.out - must support a| b| c     - Done
-* Additional - clear
-* Additional - screenfetch
-* Additional - up down keys, history- ?
-* Additional - tab keys autocompletiton
-*/
 
 struct _instr
 {
@@ -89,6 +71,10 @@ void function_grep(int argc, char *argv[]);
 void executable();
 void pipe_dup(int, instruction*);
 void run_process(int, int, instruction*);
+void function_date();
+void function_calc(char*, char*, char*);
+void function_todo(int, char*[]);
+
 
 /*Stop processes if running in terminal(a.out), close terminal if only Ctrl+C*/
 void stopSignal()
@@ -101,6 +87,127 @@ void stopSignal()
 
     }
 }
+// Function to display the current date and time
+void function_date() {
+    time_t now = time(NULL);
+    char date_str[100];
+    strftime(date_str, sizeof(date_str), "%Y-%m-%d %H:%M:%S", localtime(&now));
+    printf("%sCurrent Date and Time: %s%s\n", CYAN, date_str, RESET);
+}
+
+
+void function_calc(char* num1_str, char* operator, char* num2_str) {
+    if (num1_str == NULL || operator == NULL || num2_str == NULL) {
+        printf("%sUsage: calc <num1> <operator> <num2>%s\n", RED, RESET);
+        return;
+    }
+    double num1 = atof(num1_str);
+    double num2 = atof(num2_str);
+    double result;
+
+    if (strcmp(operator, "+") == 0) {
+        result = num1 + num2;
+    } else if (strcmp(operator, "-") == 0) {
+        result = num1 - num2;
+    } else if (strcmp(operator, "*") == 0) {
+        result = num1 * num2;
+    } else if (strcmp(operator, "/") == 0) {
+        if (num2 != 0) {
+            result = num1 / num2;
+        } else {
+            printf("%sError: Division by zero%s\n", RED, RESET);
+            return;
+        }
+    } else {
+        printf("%sUnsupported operator: %s%s\n", RED, operator, RESET);
+        return;
+    }
+    printf("%sResult: %.2f%s\n", GREEN, result, RESET);
+}
+
+
+// To-do list variables
+#define MAX_TASKS 100
+char* todo_list[MAX_TASKS];
+int todo_count = 0;
+
+// Function to manage a to-do list
+void function_todo(int argc, char* argv[]) {
+    // Ensure enough arguments are provided
+    if (argc < 2) {
+        printf("%sUsage: todo <add/list/delete> [task]%s\n", RED, RESET);
+        return;
+    }
+
+    // Add a new task to the to-do list
+    if (strcmp(argv[1], "add") == 0 && argc >= 3) {
+        if (todo_count < MAX_TASKS) {
+            // Concatenate all arguments into a single task description
+            char task[BUFSIZE] = "";
+            for (int i = 2; i < argc; i++) {
+                strcat(task, argv[i]);
+                if (i < argc - 1) strcat(task, " ");
+            }
+            todo_list[todo_count] = strdup(task);
+            if (todo_list[todo_count] != NULL) {
+                printf("%sTask added: %s%s\n", GREEN, task, RESET);
+                todo_count++;
+            } else {
+                printf("%sError: Unable to add task due to memory allocation issue.%s\n", RED, RESET);
+            }
+        } else {
+            printf("%sTask list is full! Cannot add more tasks.%s\n", RED, RESET);
+        }
+    } 
+    // List all tasks in the to-do list
+    else if (strcmp(argv[1], "list") == 0) {
+        if (todo_count == 0) {
+            printf("%sNo tasks found.%s\n", YELLOW, RESET);
+        } else {
+            printf("%sTo-Do List:%s\n", CYAN, RESET);
+            for (int i = 0; i < todo_count; i++) {
+                if (todo_list[i] != NULL) {
+                    printf("%s%d. %s%s\n", BLUE, i + 1, todo_list[i], RESET);
+                }
+            }
+        }
+    } 
+    // Delete a specific task by index
+    else if (strcmp(argv[1], "delete") == 0 && argc == 4) {
+        // Validate that the task number is a positive integer
+        for (int j = 0; j < strlen(argv[2]); j++) {
+            if (!isdigit(argv[2][j])) {
+                printf("%sError: Task number must be a positive integer.%s\n", RED, RESET);
+                return;
+            }
+        }
+
+        int index = atoi(argv[2]);
+        if (index < 1 || index > todo_count) {
+            printf("%sInvalid task number: %s%s\n", RED, argv[2], RESET);
+            return;
+        }
+        index--; // Convert to zero-based index
+
+        if (todo_list[index] != NULL) {
+            free(todo_list[index]);
+            for (int i = index; i < todo_count - 1; i++) {
+                todo_list[i] = todo_list[i + 1];
+            }
+            todo_list[todo_count - 1] = NULL; // Clear the last task slot
+            todo_count--;
+            printf("%sTask deleted successfully.%s\n", GREEN, RESET);
+        } else {
+            printf("%sError: Task not found at the given index.%s\n", RED, RESET);
+        }
+    } 
+    else {
+        printf("%sInvalid command. Use 'todo add', 'todo list', or 'todo delete'.%s\n", RED, RESET);
+    }
+}
+
+
+
 int main(int argc, char* argv[])
 {
     signal(SIGINT, stopSignal);
@@ -121,6 +228,15 @@ int main(int argc, char* argv[])
         if (strcmp(argval[0], "exit") == 0 || strcmp(argval[0], "z") == 0)
         {
             function_exit();
+        }
+        else if (strcmp(argval[0], "date") == 0 && !inBackground) {
+            function_date();
+        } 
+        else if (strcmp(argval[0], "calc") == 0 && !inBackground) {
+            function_calc(argval[1], argval[2], argval[3]);
+        } 
+        else if (strcmp(argval[0], "todo") == 0 && !inBackground) {
+            function_todo(argcount, argval);
         }
         else if (strcmp(argval[0], "screenfetch") == 0 && !inBackground)
         {
