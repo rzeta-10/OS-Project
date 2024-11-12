@@ -23,6 +23,8 @@
 
 # Question 2: UNIX-like shell program
 
+---
+
 # 🐚 `csh` - A Custom Shell in C
 
 Welcome to **`csh`**, a custom shell written in C that brings the power of basic UNIX-like commands right to your fingertips! Designed to provide a smooth and intuitive command-line experience, `csh` supports essential file and text manipulation commands, making it a great project for exploring low-level system programming.
@@ -92,6 +94,29 @@ mv oldname.txt newname.txt
 rm filename.txt
 ```
 ![rm command output](Project2_Csh/images/rm.png)
+
+### `date` - Display the current date and time
+```bash
+date
+```
+![date command output](Project2_Csh/images/date.jpeg)
+
+### `calc` - Perform arithmetic calculations
+```bash
+calc 10 + 5
+calc 15 / 3
+calc 7 * 8
+```
+![calc command output](Project2_Csh/images/calc.jpeg)
+
+### `todo` - Manage a to-do list
+```bash
+todo add "Finish homework"
+todo list
+todo delete 1
+```
+![todo command output](Project2_Csh/images/todo.jpeg)
+
 
 ## 📚 Project Structure
 
