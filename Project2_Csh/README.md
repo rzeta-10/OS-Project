@@ -33,11 +33,21 @@ make
 
 Once `csh` is running, you can start using the supported commands just as you would in a typical UNIX shell. Here are a few examples with images of each command in action:
 
+You can add the `ls -l` command with its output image right after the `ls` command. Here's how to update the README section:
+
+---
+
 ### `ls` - List directory contents
 ```bash
 ls
 ```
 ![ls command output](images/ls_2.png)
+
+### `ls -l` - List directory contents with detailed information
+```bash
+ls -l
+```
+![ls -l command output](images/ls_l.png)
 
 ### `cat` - Display contents of a file
 ```bash
@@ -56,6 +66,10 @@ grep 'pattern' filename.txt
 wc filename.txt
 ```
 ![wc command output](images/wc.png)
+
+---
+
+Make sure to replace `images/ls_l.png` with the correct path to the screenshot or image file you want to display for the `ls -l` command.
 
 ### `mv` - Move or rename a file
 ```bash
