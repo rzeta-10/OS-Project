@@ -547,31 +547,31 @@ void function_mv(char* source, char* destination)
 {
     // Check if source file exists
     if (access(source, F_OK) == -1) {
-        printf("+--- Error in mv: Source file does not exist\n");
+        printf(RED "+--- Error in mv: Source file does not exist\n" RESET);
         return;
     }
+
     // Attempt to rename (move) the file
     if (rename(source, destination) == 0) {
-        printf("+--- File moved successfully: %s -> %s\n", source, destination);
+        printf(GREEN "+--- File moved successfully: %s -> %s\n" RESET, source, destination);
     } else {
-        perror("+--- Error in mv: ");
+        perror(RED "+--- Error in mv: " RESET);
     }
 }
-
 
 void function_rm(char* filename)
 {
     // Check if the file exists before attempting to remove it
     if (access(filename, F_OK) == -1) {
-        printf("+--- Error in rm: File does not exist\n");
+        printf(RED "+--- Error in rm: File does not exist\n" RESET);
         return;
     }
 
     // Attempt to remove the file
     if (remove(filename) == 0) {
-        printf("+--- File removed successfully: %s\n", filename);
+        printf(GREEN "+--- File removed successfully: %s\n" RESET, filename);
     } else {
-        perror("+--- Error in rm: ");
+        perror(RED "+--- Error in rm: " RESET);
     }
 }
  // Next 2 functions are called by executable() */
