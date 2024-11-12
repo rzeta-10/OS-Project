@@ -30,7 +30,7 @@ cd Project1_xv6CustomizeSystemCalls
 make qemu
 
 ```
-### The following are the procedures of adding our exemplary system call ps() to xv6.
+## The following are the procedures of adding our exemplary system call ps() to xv6.
 
  ### Add name to `syscall.h`:
  
