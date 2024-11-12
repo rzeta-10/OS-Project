@@ -365,7 +365,7 @@ void getInput()
 {
     fflush(stdout); // clear all previous buffers if any
     input = NULL;
-    ssize_t buf = 0;
+    size_t buf = 0;
     getline(&input,&buf,stdin);
     // Copy into another string if we need to run special executables
     input1 = (char *)malloc(strlen(input) * sizeof(char));

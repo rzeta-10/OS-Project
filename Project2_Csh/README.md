@@ -70,6 +70,29 @@ rm filename.txt
 ```
 ![rm command output](images/rm.png)
 
+### `date` - Display the current date and time
+```bash
+date
+```
+![date command output](images/date.jpeg)
+
+### `calc` - Perform arithmetic calculations
+```bash
+calc 10 + 5
+calc 15 / 3
+calc 7 * 8
+```
+![calc command output](images/calc.jpeg)
+
+### `todo` - Manage a to-do list
+```bash
+todo add "Finish homework"
+todo list
+todo delete 1
+```
+![todo command output](images/todo.jpeg)
+
+
 ## 📚 Project Structure
 
 - **`main.c`** - Launches a new terminal instance and executes the custom shell `shell.c`
