@@ -30,12 +30,118 @@ cd Project1_xv6CustomizeSystemCalls
 make qemu
 
 ```
+### The following are the procedures of adding our exemplary system call ps() to xv6.
+
+ - Add name to syscall.h:
+ 
+ ``` 
+ // System call numbers
+#define SYS_fork    1
+..........
+#define SYS_close  21
+#define SYS_ps    22
+ ``` 
+  - Add function prototype to defs.h:
+  ``` 
+  // proc.c
+void            exit(void);
+......
+void            yield(void);
+int             ps ( void ); 
+  ```   
+ 
+ - Add function prototype to user.h:
+  ``` 
+    // system calls
+int fork(void);
+.....
+int uptime(void);
+int ps ( void );
+   ``` 
+     
+  - Add function call to sysproc.c:
+  
+   ``` 
+     int
+sys_ps ( void )
+{
+  return cps ();
+}  
+   ```
+        
+   - Add call to usys.S:
+   
+   ```
+     SYSCALL(ps)
+   ```
+       
+   - Add call to syscall.c:
+   
+   ```   
+extern int sys_chdir(void);
+.....
+extern int sys_ps(void);
+.....
+static int (*syscalls[])(void) = {
+[SYS_fork]    sys_fork,
+.....
+[SYS_close]   sys_close,
+[SYS_ps]     sys_ps,
+};    
+   ```
+     
+     
+   - Add code to proc.c:
+    
+   ``` 
+    //current process status
+int
+ps()
+{
+  struct proc *p;
+  
+  // Enable interrupts on this processor.
+  sti();
+
+    // Loop over process table looking for process with pid.
+  acquire(&ptable.lock);
+  cprintf("name \t pid \t state \n");
+  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+      if ( p->state == SLEEPING )
+        cprintf("%s \t %d  \t SLEEPING \n ", p->name, p->pid );
+      else if ( p->state == RUNNING )
+        cprintf("%s \t %d  \t RUNNING \n ", p->name, p->pid );
+  }
+  
+  release(&ptable.lock);
+  
+  return 22;
+}  
+   ``` 
+ 
+  - Create testing file ps.c with code shown below:
+   ```
+   #include "types.h"
+#include "stat.h"
+#include "user.h"
+#include "fcntl.h"
+
+int
+main(int argc, char *argv[])
+{
+  ps();
+
+  exit();
+}
+  
+   ```
 
 ### `ps` - List Process Status
 ```bash
 ps
 ```
 ![ps command output](Project1_xv6CustomizeSystemCalls/images/ps.png)
+
 
 ## On Progress ⏳
 
