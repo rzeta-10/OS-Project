@@ -1,7 +1,7 @@
 # CS_3003-Operating System Project 🚀
 
 ---
-
+This project was developed as part of a course project for [CS3003_Opersating Systems Practice].
 ---
 
 ## **Group Members** 👥
