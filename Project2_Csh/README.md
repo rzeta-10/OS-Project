@@ -1,5 +1,3 @@
----
-
 # 🐚 `csh` - A Custom Shell in C
 
 Welcome to **`csh`**, a custom shell written in C that brings the power of basic UNIX-like commands right to your fingertips! Designed to provide a smooth and intuitive command-line experience, `csh` supports essential file and text manipulation commands, making it a great project for exploring low-level system programming.
@@ -16,18 +14,19 @@ Welcome to **`csh`**, a custom shell written in C that brings the power of basic
 
 ## 🚀 Getting Started
 
-To try out `csh`, clone the repository and compile the code as follows:
+To try out `Csh`, clone the repository and compile the code as follows:
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/csh.git
-cd csh
+git clone https://github.com/rzeta-10/OS-Project.git
+cd Project2_Csh
 
 # Compile the shell program
+make clean
 make
 
 # Run the shell
-./csh
+./cshell
 ```
 
 ## 🛠️ Usage
