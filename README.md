@@ -15,7 +15,7 @@ This project was developed as part of a course project for CS3003_Operating Syst
 
 ---
 
-# Question 1: 
+# Question 1: ## On Progress ⏳
 
 ## 🚀 Getting Started
 
@@ -149,9 +149,6 @@ exit(0);
 ps
 ```
 ![ps command output](Project1_xv6CustomizeSystemCalls/images/ps.png)
-
-
-## On Progress ⏳
 
 ---
 
