@@ -32,7 +32,7 @@ make qemu
 ```
 ### The following are the procedures of adding our exemplary system call ps() to xv6.
 
- - Add name to syscall.h:
+ - Add name to `syscall.h`:
  
  ``` 
  // System call numbers
@@ -41,7 +41,7 @@ make qemu
 #define SYS_close  21
 #define SYS_ps    22
  ``` 
-  - Add function prototype to defs.h:
+  - Add function prototype to `defs.h`:
   ``` 
   // proc.c
 void            exit(void);
@@ -50,7 +50,7 @@ void            yield(void);
 int             ps ( void ); 
   ```   
  
- - Add function prototype to user.h:
+ - Add function prototype to `user.h`:
   ``` 
     // system calls
 int fork(void);
@@ -59,23 +59,23 @@ int uptime(void);
 int ps ( void );
    ``` 
      
-  - Add function call to sysproc.c:
+  - Add function call to `sysproc.c`:
   
    ``` 
-     int
+uint64
 sys_ps ( void )
 {
   return cps ();
 }  
    ```
         
-   - Add call to usys.S:
+   - Add call to `usys.S`:
    
    ```
-     SYSCALL(ps)
+    SYS_ps
    ```
        
-   - Add call to syscall.c:
+   - Add call to `syscall.c`:
    
    ```   
 extern int sys_chdir(void);
@@ -91,47 +91,55 @@ static int (*syscalls[])(void) = {
    ```
      
      
-   - Add code to proc.c:
+   - Add code to `proc.c`:
     
    ``` 
     //current process status
 int
 ps()
 {
-  struct proc *p;
-  
-  // Enable interrupts on this processor.
-  sti();
+struct proc *p;
 
-    // Loop over process table looking for process with pid.
-  acquire(&ptable.lock);
-  cprintf("name \t pid \t state \n");
-  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
-      if ( p->state == SLEEPING )
-        cprintf("%s \t %d  \t SLEEPING \n ", p->name, p->pid );
-      else if ( p->state == RUNNING )
-        cprintf("%s \t %d  \t RUNNING \n ", p->name, p->pid );
-  }
-  
-  release(&ptable.lock);
-  
-  return 22;
-}  
+// Enable interrupts on this processor.
+sti();
+
+ // Loop over process table looking for process with pid.
+acquire(&wait_lock);
+printf("name \t pid \t state \n");
+for(p = proc; p < &proc[NPROC]; p++){
+   if ( p->state == SLEEPING )
+     printf("%s \t %d  \t SLEEPING \n ", p->name, p->pid );
+   else if ( p->state == RUNNING )
+     printf("%s \t %d  \t RUNNING \n", p->name, p->pid );
+    else if ( p->state == RUNNABLE )
+      printf("%s \t %d  \t RUNNABLE \n", p->name, p->pid );
+      else if ( p->state == ZOMBIE )
+      printf("%s \t %d  \t ZOMBIE \n", p->name, p->pid );
+      else if ( p->state == USED )
+      printf("%s \t %d  \t USED \n", p->name, p->pid );
+}
+
+release(&wait_lock);
+
+return 22;
+}
+
    ``` 
  
-  - Create testing file ps.c with code shown below:
+  - Create testing file `ps.c` with code shown below:
    ```
-   #include "types.h"
-#include "stat.h"
-#include "user.h"
-#include "fcntl.h"
+#include "kernel/types.h"
+#include "kernel/stat.h"
+#include "user/user.h"
+#include "kernel/fs.h"
+#include "kernel/fcntl.h"
 
 int
 main(int argc, char *argv[])
 {
-  ps();
+ps();
 
-  exit();
+exit(0);
 }
   
    ```
