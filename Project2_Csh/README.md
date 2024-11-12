@@ -33,7 +33,7 @@ make
 
 Once `csh` is running, you can start using the supported commands just as you would in a typical UNIX shell. Here are a few examples with images of each command in action:
 
-You can add the `ls -l` command with its output image right after the `ls` command. Here's how to update the README section:
+
 
 ---
 
