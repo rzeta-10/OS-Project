@@ -198,7 +198,7 @@ Once `csh` is running, you can start using the supported commands just as you wo
 ```bash
 ls
 ```
-![ls command output](Project2_Csh/images/ls_1.png)
+![ls command output](Project2_Csh/images/ls_2.png)
 
 ### `cat` - Display contents of a file
 ```bash
