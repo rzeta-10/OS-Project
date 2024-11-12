@@ -202,7 +202,7 @@ ls
 ```bash
 ls -l
 ```
-![ls -l command output](images/ls_l.png)
+![ls -l command output](Project2_Csh/images/ls_l.png)
 
 ### `cat` - Display contents of a file
 ```bash
