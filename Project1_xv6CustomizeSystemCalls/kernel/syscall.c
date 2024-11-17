@@ -79,6 +79,15 @@ argstr(int n, char *buf, int max)
   return fetchstr(addr, buf, max);
 }
 
+int
+getppid(void)
+{
+    struct proc *p = myproc(); // Get the current process
+    acquire(&p->lock);         // Lock the process to ensure safe access
+    int ppid = p->parent ? p->parent->pid : -1; // Get parent PID or -1 if no parent
+    release(&p->lock);         // Release the lock
+    return ppid;
+}
 // Prototypes for the functions that handle system calls.
 extern uint64 sys_fork(void);
 extern uint64 sys_exit(void);
@@ -103,6 +112,8 @@ extern uint64 sys_mkdir(void);
 extern uint64 sys_close(void);
 extern uint64 sys_ps(void);
 extern uint64 sys_fork2(void);
+extern int sys_getppid(void);
+
 
 // An array mapping syscall numbers from syscall.h
 // to the function that handles the system call.
@@ -130,6 +141,8 @@ static uint64 (*syscalls[])(void) = {
 [SYS_close]   sys_close,
 [SYS_ps]     sys_ps,
 [SYS_fork2]    sys_fork2,
+[SYS_getppid] sys_getppid,
+
 };
 
 void

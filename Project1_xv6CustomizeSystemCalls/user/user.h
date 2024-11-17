@@ -24,6 +24,8 @@ char* sbrk(int);
 int sleep(int);
 int uptime(void);
 int fork2(int priority);
+int getppid(void);
+
 
 // ulib.c
 int stat(const char*, struct stat*);

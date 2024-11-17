@@ -23,7 +23,7 @@ extern void forkret(void);
 static void freeproc(struct proc *p);
 
 extern char trampoline[]; // trampoline.S
-
+int getppid(void);
 void sti(void);
 
 // helps ensure that wakeups of wait()ing
@@ -389,6 +389,15 @@ exit(int status)
   // Jump into the scheduler, never to return.
   sched();
   panic("zombie exit");
+}
+int
+getppid(void)
+{
+    struct proc *p = myproc(); // Get the current process
+    acquire(&p->lock);         // Lock the process to ensure safe access
+    int ppid = p->parent ? p->parent->pid : -1; // Get parent PID or -1 if no parent
+    release(&p->lock);         // Release the lock
+    return ppid;
 }
 
 // Wait for a child process to exit and return its pid.

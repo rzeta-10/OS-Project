@@ -115,3 +115,7 @@ fork2:
  li a7, SYS_fork2
  ecall
  ret
+ getppid:
+    li a7, SYS_getppid
+    ecall
+    ret
