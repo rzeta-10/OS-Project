@@ -11,6 +11,8 @@
 #include <pwd.h>
 #include <time.h>
 #include<ctype.h>
+#include <sys/statvfs.h>
+#include <utime.h>
 #include <fcntl.h>
 #include<signal.h>
 #define BUFSIZE 1000
@@ -66,6 +68,12 @@ void function_lsl();
 void function_cp(char*, char*);
 void function_mv(char* source, char* destination);
 void function_wc(char* filename);  // Function prototype for function_wc
+void function_head(char* filename, int lines);
+void function_tail(char* filename, int lines);
+void function_touch(char* filename);
+void function_find(char* dirname, char* pattern);
+void function_tree(char* path, int level);
+void function_df();
 
 void function_grep(int argc, char *argv[]);
 void executable();
@@ -204,6 +212,142 @@ void function_todo(int argc, char* argv[]) {
     else {
         printf("%sInvalid command. Use 'todo add', 'todo list', or 'todo delete'.%s\n", RED, RESET);
     }
+}
+void function_head(char* filename, int lines) {
+    FILE* file = fopen(filename, "r");
+    if (file == NULL) {
+        printf("Error: Cannot open file %s\n", filename);
+        return;
+    }
+
+    char buffer[1024];
+    int count = 0;
+    while (count < lines && fgets(buffer, sizeof(buffer), file) != NULL) {
+        printf("%s", buffer);
+        count++;
+    }
+
+    fclose(file);
+}
+
+void function_tail(char* filename, int lines) {
+    FILE* file = fopen(filename, "r");
+    if (file == NULL) {
+        printf("Error: Cannot open file %s\n", filename);
+        return;
+    }
+
+    // Count total lines in file
+    int total_lines = 0;
+    char buffer[1024];
+    while (fgets(buffer, sizeof(buffer), file) != NULL) {
+        total_lines++;
+    }
+
+    // Reset file pointer to beginning
+    rewind(file);
+
+    // Skip lines until we reach desired starting point
+    int skip_lines = total_lines - lines;
+    if (skip_lines < 0) skip_lines = 0;
+
+    int count = 0;
+    while (fgets(buffer, sizeof(buffer), file) != NULL) {
+        if (count >= skip_lines) {
+            printf("%s", buffer);
+        }
+        count++;
+    }
+
+    fclose(file);
+}
+
+void function_touch(char* filename) {
+    FILE* file = fopen(filename, "a");
+    if (file == NULL) {
+        printf("Error: Cannot touch file %s\n", filename);
+        return;
+    }
+    fclose(file);
+
+    // Update access and modification times
+    struct utimbuf new_times;
+    time_t current_time = time(NULL);
+    new_times.actime = current_time;
+    new_times.modtime = current_time;
+    utime(filename, &new_times);
+}
+
+void function_find(char* dirname, char* pattern) {
+    DIR* dir = opendir(dirname);
+    if (dir == NULL) {
+        printf("Error: Cannot open directory %s\n", dirname);
+        return;
+    }
+
+    struct dirent* entry;
+    char path[1024];
+    while ((entry = readdir(dir)) != NULL) {
+        if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)
+            continue;
+
+        snprintf(path, sizeof(path), "%s/%s", dirname, entry->d_name);
+
+        if (strstr(entry->d_name, pattern) != NULL) {
+            printf("%s\n", path);
+        }
+
+        struct stat statbuf;
+        if (stat(path, &statbuf) == 0 && S_ISDIR(statbuf.st_mode)) {
+            function_find(path, pattern);
+        }
+    }
+    closedir(dir);
+}
+
+void function_tree(char* path, int level) {
+    DIR* dir = opendir(path);
+    if (dir == NULL) {
+        printf("Error: Cannot open directory %s\n", path);
+        return;
+    }
+
+    struct dirent* entry;
+    while ((entry = readdir(dir)) != NULL) {
+        if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)
+            continue;
+
+        for (int i = 0; i < level; i++) {
+            printf("│   ");
+        }
+        printf("├── %s\n", entry->d_name);
+
+        char new_path[1024];
+        snprintf(new_path, sizeof(new_path), "%s/%s", path, entry->d_name);
+
+        struct stat statbuf;
+        if (stat(new_path, &statbuf) == 0 && S_ISDIR(statbuf.st_mode)) {
+            function_tree(new_path, level + 1);
+        }
+    }
+    closedir(dir);
+}
+
+void function_df() {
+    struct statvfs buf;
+    if (statvfs(".", &buf) == -1) {
+        perror("Error getting disk information");
+        return;
+    }
+
+    unsigned long total = (buf.f_blocks * buf.f_frsize) / (1024 * 1024);
+    unsigned long available = (buf.f_bfree * buf.f_frsize) / (1024 * 1024);
+    unsigned long used = total - available;
+    float used_percent = ((float)used / total) * 100;
+
+    printf("Filesystem      Size  Used  Avail Use%%\n");
+    printf("%-14s %4luM %4luM  %4luM  %3.1f%%\n", 
+           ".", total, used, available, used_percent);
 }
 
 
@@ -353,6 +497,63 @@ int main(int argc, char* argv[])
             {
                 printf("+--- Error in rm: Missing filename\n");
             }
+        }
+                else if (strcmp(argval[0], "head") == 0 && !inBackground)
+        {
+            int lines = 10; // Default 10 lines
+            char* filename = argval[1];
+            if (argcount > 2 && strcmp(argval[1], "-n") == 0) {
+                lines = atoi(argval[2]);
+                filename = argval[3];
+            }
+            if (filename != NULL) {
+                function_head(filename, lines);
+            } else {
+                printf("Error: Missing filename for head command.\n");
+            }
+        }
+        else if (strcmp(argval[0], "tail") == 0 && !inBackground)
+        {
+            int lines = 10; // Default 10 lines
+            char* filename = argval[1];
+            if (argcount > 2 && strcmp(argval[1], "-n") == 0) {
+                lines = atoi(argval[2]);
+                filename = argval[3];
+            }
+            if (filename != NULL) {
+                function_tail(filename, lines);
+            } else {
+                printf("Error: Missing filename for tail command.\n");
+            }
+        }
+        else if (strcmp(argval[0], "touch") == 0 && !inBackground)
+        {
+            char* filename = argval[1];
+            if (filename != NULL) {
+                function_touch(filename);
+            } else {
+                printf("Error: Missing filename for touch command.\n");
+            }
+        }
+        else if (strcmp(argval[0], "find") == 0 && !inBackground)
+        {
+            char* dirname = ".";  // Default to current directory
+            char* pattern = argval[1];
+            if (argcount > 2) {
+                dirname = argval[1];
+                pattern = argval[2];
+            }
+            function_find(dirname, pattern);
+        }
+        else if (strcmp(argval[0], "tree") == 0 && !inBackground)
+        {
+            char* path = argval[1];
+            if (path == NULL) path = ".";
+            function_tree(path, 0);
+        }
+        else if (strcmp(argval[0], "df") == 0 && !inBackground)
+        {
+            function_df();
         }
         else
         {
