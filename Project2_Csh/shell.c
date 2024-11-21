@@ -70,7 +70,7 @@ void function_mv(char* source, char* destination);
 void function_wc(char* filename);  // Function prototype for function_wc
 void function_head(char* filename, int lines);
 void function_tail(char* filename, int lines);
-void function_touch(char* filename);
+void function_touch(char* filename); // function prototype for touch
 void function_find(char* dirname, char* pattern);
 void function_tree(char* path, int level);
 void function_df();
