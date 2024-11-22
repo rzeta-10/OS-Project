@@ -24,6 +24,8 @@ char* sbrk(int);
 int sleep(int);
 int uptime(void);
 int fork2(int priority);
+int get_ppid(void); // Add below the other system call prototypes
+
 
 // ulib.c
 int stat(const char*, struct stat*);
