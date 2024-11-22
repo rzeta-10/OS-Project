@@ -30,65 +30,66 @@ make
 ./cshell
 ```
 
+![shell output](images/csh.jpeg)
+
 ## 🛠️ Usage
 
 Once `csh` is running, you can start using the supported commands just as you would in a typical UNIX shell. Here are a few examples with images of each command in action:
 
 
-
 ---
+
+You can use the `Up Arrow (↑)` and `Down Arrow (↓)` keys to navigate through previously executed commands
 
 ### `ls` - List directory contents
 ```bash
 ls
 ```
-![ls command output](images/ls_2.png)
+![ls command output](images/ls.jpeg)
 
 ### `ls -l` - List directory contents with detailed information
 ```bash
 ls -l
 ```
-![ls -l command output](images/ls_l.png)
+![ls -l command output](images/ls%20-l.jpeg)
 
 ### `cat` - Display contents of a file
 ```bash
 cat filename.txt
 ```
-![cat command output](images/cat.png)
+![cat command output](images/cat.jpeg)
 
 ### `grep` - Search for patterns within files
 ```bash
 grep 'pattern' filename.txt
 ```
-![grep command output](images/grep.png)
+![grep command output](images/grep.jpeg)
 
 ### `wc` - Count lines, words, and characters in a file
 ```bash
 wc filename.txt
 ```
-![wc command output](images/wc.png)
+![wc command output](images/wc.jpeg)
 
 ---
-
-Make sure to replace `images/ls_l.png` with the correct path to the screenshot or image file you want to display for the `ls -l` command.
 
 ### `mv` - Move or rename a file
 ```bash
 mv oldname.txt newname.txt
 ```
-![mv command output](images/mv_1.png)
+![mv command output](images/mv.jpeg)
 
 ### `rm` - Delete a file
 ```bash
 rm filename.txt
 ```
-![rm command output](images/rm_1.png)
+![rm command output](images/rm.jpeg)
 
 ### `date` - Display the current date and time
 ```bash
 date
 ```
-![date command output](images/date.jpeg)
+![date command output](images/datetime.jpeg)
 
 ### `calc` - Perform arithmetic calculations
 ```bash
@@ -113,7 +114,7 @@ touch filename
 ![touch command output](images/touch.jpeg)
 
 
-### `df` - 
+### `df` - Displays disk memory usage
 ```bash
 df 
 ```
