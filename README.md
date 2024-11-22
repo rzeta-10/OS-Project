@@ -156,7 +156,7 @@ ps
 
 ---
 
-## The following are the procedures of adding our exemplary system call fork2 to xv6.
+## The following are the procedures of adding our exemplary system call fork2() to xv6.
 
  ### Add name to `syscall.h`:
  
@@ -397,6 +397,195 @@ int main(void)
 get_ppid_test
 ```
 ![get_ppid_test command output](Project1_xv6CustomizeSystemCalls/images/get_ppid.png)
+
+---
+## The following are the procedures of adding our exemplary system call set_perm_test() to xv6.
+## **File Structure**
+```
+.
+├── kernel
+│   ├── defs.h          # Permission definitions
+│   ├── proc.h          # Added perm_flags to struct proc
+│   ├── sysproc.c       # set_perm implementation
+│   ├── syscall.c       # Added set_perm to dispatch table
+│   └── syscall.h       # Added SYS_set_perm
+├── user
+│   ├── user.h          # User-space prototype for set_perm
+│   ├── usys.S          # Assembly stub for set_perm
+│   ├── set_perm_test.c # Test program for set_perm
+│   └── ...
+├── Makefile            # Added _set_perm_test to UPROGS
+├── README.md           # This file
+```
+
+
+## **Features**
+
+- **`set_perm` System Call**:
+  - Assigns custom permissions to a process based on its PID.
+  - Allows extending xv6 with process-level access control.
+
+---
+
+## **Implementation Steps**
+
+### **1. Add System Call Number**
+Define the system call number in `kernel/syscall.h`:
+```c
+#define SYS_set_perm 23
+```
+
+---
+
+### **2. Add Function Prototypes**
+
+#### In `kernel/defs.h`:
+```c
+int set_perm(int pid, int perm_flags);
+```
+
+#### In `user/user.h`:
+```c
+int set_perm(int pid, int perm_flags);
+```
+
+---
+
+### **3. Implement the Kernel Function**
+#### File: `kernel/sysproc.c`
+```c
+uint64
+sys_set_perm(void)
+{
+    int pid, perm_flags;
+
+    // Retrieve arguments using argint
+    argint(0, &pid);
+    argint(1, &perm_flags);
+
+    struct proc *p;
+
+    // Loop through the process table to find the process with the given PID
+    for (p = proc; p < &proc[NPROC]; p++) {
+        if (p->pid == pid) {
+            p->perm_flags = perm_flags;  // Set the permission flags
+            return 0;  // Success
+        }
+    }
+
+    return -1;  // Process not found
+}
+```
+
+---
+
+### **4. Add the Permission Field**
+#### File: `kernel/proc.h`
+Add a new field to `struct proc`:
+```c
+struct proc {
+    ...
+    int perm_flags;  // Permissions for the process
+};
+```
+
+---
+
+### **5. Update the System Call Table**
+#### File: `kernel/syscall.c`
+1. Declare the system call:
+   ```c
+   extern uint64 sys_set_perm(void);
+   ```
+
+2. Add it to the `syscalls` array:
+   ```c
+   [SYS_set_perm] sys_set_perm,
+   ```
+
+---
+
+### **6. Add the Assembly Stub**
+#### File: `user/usys.S`
+```asm
+.global set_perm
+set_perm:
+    li a7, SYS_set_perm
+    ecall
+    ret
+```
+
+---
+
+### **7. Create a Test Program**
+#### File: `user/set_perm_test.c`
+```c
+#include "kernel/types.h"
+#include "kernel/stat.h"
+#include "user/user.h"
+
+int main(int argc, char *argv[])
+{
+    if (argc != 3) {
+        printf("Usage: set_perm <pid> <perm_flags>\n");
+        exit(1);
+    }
+
+    int pid = atoi(argv[1]);
+    int perm_flags = atoi(argv[2]);
+
+    if (set_perm(pid, perm_flags) < 0) {
+        printf("Error: Unable to set permissions for process %d\n", pid);
+    } else {
+        printf("Permissions set for process %d\n", pid);
+    }
+
+    exit(0);
+}
+```
+
+---
+
+### **8. Update the Makefile**
+Add the test program to the user programs in the `Makefile`:
+```makefile
+UPROGS = \
+    ...
+    $U/_set_perm_test \
+```
+
+---
+
+## **Build and Test**
+
+1. **Rebuild xv6:**
+   ```bash
+   make clean
+   make qemu
+   ```
+
+2. **Run the Test Program:**
+   Inside the xv6 shell:
+   ```bash
+   $ set_perm_test <pid> <perm_flags>
+   ```
+
+---
+
+## **Expected Output**
+
+- If the process exists:
+  ```
+  Permissions set for process <pid>
+  ```
+- If the process does not exist:
+  ```
+  Error: Unable to set permissions for process <pid>
+  ```
+
+---
+
+
 
 ---
 
