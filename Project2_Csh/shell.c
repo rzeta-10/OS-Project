@@ -14,11 +14,30 @@
 #include <sys/statvfs.h>
 #include <utime.h>
 #include <fcntl.h>
+#include <math.h>
 #include<signal.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <termios.h> // Include this for terminal control
+#include <fcntl.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <signal.h>
+#include <sys/stat.h>
+#include <errno.h>
+#include <dirent.h>
+#include <grp.h>
+#include <pwd.h>
+#include <time.h>
+#include <dirent.h> // For directory handling
+#include <ctype.h>
 #define BUFSIZE 1000
 #define INPBUF 100
 #define ARGMAX 10
 #define GREEN "\x1b[92m"
+#define MAGENTA "\x1b[95m" 
 #define BLUE "\x1b[94m"
 #define DEF "\x1B[0m"
 #define CYAN "\x1b[96m"
@@ -26,6 +45,9 @@
 #define RED "\x1b[91m"
 #define YELLOW "\x1b[93m"
 #ifndef DT_REG
+#define TAB 9
+#define SHIFT_TAB 27 // Placeholder for Shift + Tab detection
+#define ENTER 13
 
 
 #define DT_REG 8  // Value for regular files
@@ -34,7 +56,8 @@
 #ifndef DT_DIR
 #define DT_DIR 4  // Value for directories
 #endif
-
+#define HISTORY_SIZE 100
+#define COMMAND_SIZE 1024
 
 struct _instr
 {
@@ -43,6 +66,15 @@ struct _instr
 };
 typedef struct _instr instruction;
 
+// State for tab-completion
+DIR* dir = NULL;                   // Opened directory pointer
+struct dirent* entry = NULL;       // Directory entry pointer
+char current_path[BUFSIZE];        // Path for the current directory iteration
+int is_iterating = 0;              // Flag to check if iteration is active
+
+char history[HISTORY_SIZE][COMMAND_SIZE]; // Command history buffer
+int history_count = 0;                   // Total commands in history
+int current_history_index = -1;          // Current position in history for navigation
 char *input,*input1;
 int exitflag = 0;
 int filepid,fd[2];
@@ -54,6 +86,7 @@ char inputfile[INPBUF],outputfile[INPBUF];
 void screenfetch();
 void about();
 void getInput();
+void function_date(int,char*[]);
 int function_exit();
 void function_pwd(char*, int);
 void function_cd(char*);
@@ -74,15 +107,138 @@ void function_touch(char* filename); // function prototype for touch
 void function_find(char* dirname, char* pattern);
 void function_tree(char* path, int level);
 void function_df();
-
-void function_grep(int argc, char *argv[]);
+void function_grep(int,char * []);
+// Function prototypes
+void enable_raw_mode();
+void disable_raw_mode();
+void print_prompt(char *);
 void executable();
-void pipe_dup(int, instruction*);
 void run_process(int, int, instruction*);
-void function_date();
-void function_calc(char*, char*, char*);
-void function_todo(int, char*[]);
 
+
+void enable_raw_mode() {
+    struct termios raw;
+    tcgetattr(STDIN_FILENO, &raw);
+    raw.c_lflag &= ~(ICANON | ECHO);
+    tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
+}
+void disable_raw_mode() {
+    struct termios original;
+    tcgetattr(STDIN_FILENO, &original);
+    original.c_lflag |= (ICANON | ECHO);
+    tcsetattr(STDIN_FILENO, TCSAFLUSH, &original);
+}
+
+void print_prompt(char* cwd) {
+    if (cwd == NULL) {
+        perror("Error: cwd is NULL");
+        return;
+    }
+
+    char temp[BUFSIZE];
+    strncpy(temp, cwd, BUFSIZE); // Copy cwd to a temporary buffer to modify it
+
+    char* grandparent = NULL;
+    char* parent = NULL;
+    char* last_slash = strrchr(temp, '/'); // Find the last slash
+
+    if (last_slash != NULL && last_slash != temp) {
+        *last_slash = '\0'; // Null-terminate to separate parent and grandparent
+        parent = strrchr(temp, '/'); // Find the second-to-last slash
+        if (parent != NULL) {
+            *parent = '\0'; // Null-terminate to separate grandparent
+            grandparent = temp; // Grandparent directory
+            parent++;           // Immediate parent directory
+        }
+    }
+
+    // Print the prompt with colors
+    printf("%s%s/%s%s/%s%s\n", 
+           GREEN, grandparent ? grandparent : "", 
+           parent ? parent : "", 
+           BLUE, last_slash + 1, 
+           RESET); // Reset color at the end
+
+    printf("> ");
+    fflush(stdout);
+}
+
+// Function to handle arrow key input
+void handle_arrow_keys(char* input_buffer, int* input_length, int key) {
+    if (key == 'A') { // Up arrow
+        if (current_history_index > 0) {
+            current_history_index--;
+            strcpy(input_buffer, history[current_history_index]);
+            *input_length = strlen(input_buffer);
+            printf("\r\x1b[K"); // Clear current line
+            char cwd[COMMAND_SIZE];
+            getcwd(cwd, sizeof(cwd));
+           // print_prompt(cwd); // Reprint prompt
+            printf("> %s", input_buffer); // Display command
+            fflush(stdout);
+        }
+    } else if (key == 'B') { // Down arrow
+        if (current_history_index < history_count - 1) {
+            current_history_index++;
+            strcpy(input_buffer, history[current_history_index]);
+        } else {
+            current_history_index = history_count;
+            input_buffer[0] = '\0'; // Clear buffer
+        }
+        *input_length = strlen(input_buffer);
+        printf("\r\x1b[K"); // Clear current line
+        char cwd[COMMAND_SIZE];
+        getcwd(cwd, sizeof(cwd));
+       // print_prompt(cwd); // Reprint prompt
+        printf("> %s", input_buffer); // Display command
+        fflush(stdout);
+    }
+}
+void read_input_with_history(char* input_buffer, int buffer_size) {
+    enable_raw_mode();
+    int input_length = 0;
+    input_buffer[0] = '\0'; // Initialize buffer to empty
+
+    while (1) {
+        char c;
+        read(STDIN_FILENO, &c, 1); // Read one character at a time
+
+        if (c == '\n') { // Enter key
+            input_buffer[input_length] = '\0'; // Null-terminate the input
+            printf("\n"); // Move to the next line
+            if (input_length > 0 && history_count < HISTORY_SIZE) {
+                strcpy(history[history_count++], input_buffer); // Save command to history
+            }
+            current_history_index = history_count; // Reset history index
+            break;
+        } else if (c == 127 || c == '\b') { // Backspace key
+            if (input_length > 0) {
+                input_length--;
+                input_buffer[input_length] = '\0';
+
+                // Clear the current line and redisplay the buffer
+                printf("\r\x1b[K> %s", input_buffer); // Clear line, reprint prompt and buffer
+                fflush(stdout);
+            }
+        } else if (c == '\033') { // Arrow keys (Escape sequence)
+            char seq[2];
+            if (read(STDIN_FILENO, &seq, 2) == 2) {
+                handle_arrow_keys(input_buffer, &input_length, seq[1]);
+            }
+        } else if (isprint(c) || c == ' ') { // Printable characters or space
+            if (input_length < buffer_size - 1) {
+                input_buffer[input_length++] = c;
+                input_buffer[input_length] = '\0';
+
+                // Display the character or space
+                printf("%c", c);
+                fflush(stdout);
+            }
+        }
+    }
+
+    disable_raw_mode();
+}
 
 /*Stop processes if running in terminal(a.out), close terminal if only Ctrl+C*/
 void stopSignal()
@@ -95,22 +251,83 @@ void stopSignal()
 
     }
 }
-// Function to display the current date and time
-void function_date() {
+
+void function_datetime(int argc, char* argv[]) {
     time_t now = time(NULL);
+    struct tm* local = localtime(&now);
     char date_str[100];
-    strftime(date_str, sizeof(date_str), "%Y-%m-%d %H:%M:%S", localtime(&now));
-    printf("%sCurrent Date and Time: %s%s\n", CYAN, date_str, RESET);
-}
+    char day_str[50];
+    char formatted_date[100];
+    char time_str[50];
 
+    // Flags
+    int show_day = 0, show_written = 0, show_am_pm = 0;
 
-void function_calc(char* num1_str, char* operator, char* num2_str) {
-    if (num1_str == NULL || operator == NULL || num2_str == NULL) {
-        printf("%sUsage: calc <num1> <operator> <num2>%s\n", RED, RESET);
+    // Parse arguments
+    for (int i = 1; i < argc; i++) {
+        if (strcmp(argv[i], "-d") == 0) {
+            show_day = 1;
+        } else if (strcmp(argv[i], "-w") == 0) {
+            show_written = 1;
+        } else if (strcmp(argv[i], "-t") == 0) {
+            show_am_pm = 1;
+        } else {
+            printf("%sInvalid option: %s%s\n", RED, argv[i], RESET);
+            printf("%sUsage: datetime [options]\n", YELLOW);
+            printf("Options:\n");
+            printf("  -d        Show day of the week and time\n");
+            printf("  -w        Show date in '1st July 2024' format with time\n");
+            printf("  -t        Show time in AM/PM format along with date\n");
+            printf("Combinations of these options are supported.\n%s", RESET);
+            return;
+        }
+    }
+
+    // Handle default case (no arguments)
+    if (argc == 1) {
+        strftime(date_str, sizeof(date_str), "%Y-%m-%d %H:%M:%S", local);
+        printf("%sCurrent Date and Time: %s%s\n", CYAN, date_str, RESET);
         return;
     }
+
+    // Prepare outputs
+    if (show_day) {
+        strftime(day_str, sizeof(day_str), "%A, %H:%M:%S", local);
+        printf("%sDay and Time: %s%s\n", GREEN, day_str, RESET);
+    }
+
+    if (show_written) {
+        strftime(formatted_date, sizeof(formatted_date), "%e %B %Y, %H:%M:%S", local);
+        printf("%sDate and Time: %s%s\n", YELLOW, formatted_date, RESET);
+    }
+
+    if (show_am_pm) {
+        strftime(time_str, sizeof(time_str), "%I:%M:%S %p, %d %B %Y", local);
+        printf("%sDate and time: %s%s\n", MAGENTA, time_str, RESET);
+    }
+}
+
+void function_calc(char* num1_str, char* operator, char* num2_str) {
+    if (num1_str == NULL || operator == NULL) {
+        printf("%sUsage: calc <num1> <operator> <num2>\nSupported operators: +, -, *, /, %%, ^, sqrt%s\n", RED, RESET);
+        return;
+    }
+
+    // Handle special case for "sqrt"
+    if (strcmp(operator, "sqrt") == 0) {
+        double num = atof(num1_str);
+        if (num < 0) {
+            printf("%sError: Cannot calculate square root of a negative number.%s\n", RED, RESET);
+            return;
+        }
+        double result = sqrt(num);
+        printf("%sResult: %.2f%s\n", GREEN, result, RESET);
+        return;
+    }
+
+    // Parse numbers
     double num1 = atof(num1_str);
-    double num2 = atof(num2_str);
+    double num2 = (num2_str != NULL) ? atof(num2_str) : 0;
     double result;
 
     if (strcmp(operator, "+") == 0) {
@@ -126,10 +343,24 @@ void function_calc(char* num1_str, char* operator, char* num2_str) {
             printf("%sError: Division by zero%s\n", RED, RESET);
             return;
         }
+    } else if (strcmp(operator, "%") == 0) {
+        if (num2_str == NULL) {
+            printf("%sError: Modulo requires two numbers.%s\n", RED, RESET);
+            return;
+        }
+        if ((int)num1 == num1 && (int)num2 == num2) { // Ensure both numbers are integers
+            result = (int)num1 % (int)num2;
+        } else {
+            printf("%sError: Modulo operation is only supported for integers.%s\n", RED, RESET);
+            return;
+        }
+    } else if (strcmp(operator, "^") == 0) {
+        result = pow(num1, num2);
     } else {
         printf("%sUnsupported operator: %s%s\n", RED, operator, RESET);
         return;
     }
+
     printf("%sResult: %.2f%s\n", GREEN, result, RESET);
 }
 
@@ -181,7 +412,7 @@ void function_todo(int argc, char* argv[]) {
         }
     } 
     // Delete a specific task by index
-    else if (strcmp(argv[1], "delete") == 0 && argc == 4) {
+    else if (strcmp(argv[1], "delete") == 0 && argc == 3) {
         // Validate that the task number is a positive integer
         for (int j = 0; j < strlen(argv[2]); j++) {
             if (!isdigit(argv[2][j])) {
@@ -216,45 +447,42 @@ void function_todo(int argc, char* argv[]) {
 void function_head(char* filename, int lines) {
     FILE* file = fopen(filename, "r");
     if (file == NULL) {
-        printf("Error: Cannot open file %s\n", filename);
+        printf("%sError: Cannot open file %s%s\n", RED, filename, RESET);
         return;
     }
 
     char buffer[1024];
     int count = 0;
     while (count < lines && fgets(buffer, sizeof(buffer), file) != NULL) {
-        printf("%s", buffer);
+        printf("%s%s%s", CYAN, buffer, RESET); // Apply unique color
         count++;
     }
 
     fclose(file);
 }
 
+
 void function_tail(char* filename, int lines) {
     FILE* file = fopen(filename, "r");
     if (file == NULL) {
-        printf("Error: Cannot open file %s\n", filename);
+        printf("%sError: Cannot open file %s%s\n", RED, filename, RESET);
         return;
     }
 
-    // Count total lines in file
     int total_lines = 0;
     char buffer[1024];
     while (fgets(buffer, sizeof(buffer), file) != NULL) {
         total_lines++;
     }
 
-    // Reset file pointer to beginning
     rewind(file);
-
-    // Skip lines until we reach desired starting point
     int skip_lines = total_lines - lines;
     if (skip_lines < 0) skip_lines = 0;
 
     int count = 0;
     while (fgets(buffer, sizeof(buffer), file) != NULL) {
         if (count >= skip_lines) {
-            printf("%s", buffer);
+            printf("%s%s%s", BLUE, buffer, RESET); // Apply unique color
         }
         count++;
     }
@@ -281,7 +509,7 @@ void function_touch(char* filename) {
 void function_find(char* dirname, char* pattern) {
     DIR* dir = opendir(dirname);
     if (dir == NULL) {
-        printf("Error: Cannot open directory %s\n", dirname);
+        printf("%sError: Cannot open directory %s%s\n", RED, dirname, RESET);
         return;
     }
 
@@ -294,7 +522,7 @@ void function_find(char* dirname, char* pattern) {
         snprintf(path, sizeof(path), "%s/%s", dirname, entry->d_name);
 
         if (strstr(entry->d_name, pattern) != NULL) {
-            printf("%s\n", path);
+            printf("%s%s%s\n", GREEN, path, RESET); // Apply unique color
         }
 
         struct stat statbuf;
@@ -304,6 +532,7 @@ void function_find(char* dirname, char* pattern) {
     }
     closedir(dir);
 }
+
 
 void function_tree(char* path, int level) {
     DIR* dir = opendir(path);
@@ -345,161 +574,122 @@ void function_df() {
     unsigned long used = total - available;
     float used_percent = ((float)used / total) * 100;
 
-    printf("Filesystem      Size  Used  Avail Use%%\n");
-    printf("%-14s %4luM %4luM  %4luM  %3.1f%%\n", 
-           ".", total, used, available, used_percent);
+    // Print table header with proper alignment
+    printf("%s%-15s %10s %10s %10s %6s%s\n", 
+           CYAN, "Filesystem", "Size", "Used", "Avail", "Use%", RESET);
+
+    // Print disk usage information with proper alignment
+    printf("%s%-15s %10luM %10luM %10luM %6.1f%%%s\n", 
+           GREEN, ".", total, used, available, used_percent, RESET);
 }
 
 
 
-int main(int argc, char* argv[])
-{
+int main(int argc, char* argv[]) {
     signal(SIGINT, stopSignal);
     int i;
     int pipe1 = pipe(fd);
     function_clear();
     screenfetch();
     function_pwd(cwd, 0);
-    while (exitflag == 0)
-    {
+    
+    while (exitflag == 0) {
         externalIn = 0;
         externalOut = 0;
         inBackground = 0;
-        printf("%s%s ~> ", DEF, cwd); // print user prompt
-        // scanf("%s",input); - fails due to spaces, tabs
-        getInput();
 
-        if (strcmp(argval[0], "exit") == 0 || strcmp(argval[0], "z") == 0)
-        {
+        char input_buffer[INPBUF]; // To store user input
+        print_prompt(cwd);        // Print the prompt
+        read_input_with_history(input_buffer, INPBUF); // Read user input with history support
+
+        // Parse the input into arguments
+        argcount = 0;
+        input = strdup(input_buffer); // Duplicate input for tokenization
+        while ((argval[argcount] = strsep(&input, " \t\n")) != NULL && argcount < ARGMAX - 1) {
+            if (strlen(argval[argcount]) == 0) continue; // Skip empty tokens
+            argcount++;
+        }
+        free(input);
+
+        // Execute commands
+        if (argcount == 0) continue; // Skip empty commands
+
+        if (strcmp(argval[0], "exit") == 0 || strcmp(argval[0], "z") == 0) {
             function_exit();
-        }
-        else if (strcmp(argval[0], "date") == 0 && !inBackground) {
-            function_date();
-        } 
-        else if (strcmp(argval[0], "calc") == 0 && !inBackground) {
+        } else if (strcmp(argval[0], "datetime") == 0 && !inBackground) {
+            function_datetime(argcount,argval);
+        } else if (strcmp(argval[0], "calc") == 0 && !inBackground) {
             function_calc(argval[1], argval[2], argval[3]);
-        } 
-        else if (strcmp(argval[0], "todo") == 0 && !inBackground) {
+        } else if (strcmp(argval[0], "todo") == 0 && !inBackground) {
             function_todo(argcount, argval);
-        }
-        else if (strcmp(argval[0], "screenfetch") == 0 && !inBackground)
-        {
+        } else if (strcmp(argval[0], "screenfetch") == 0 && !inBackground) {
             screenfetch();
-        }
-        else if (strcmp(argval[0], "about") == 0 && !inBackground)
-        {
+        } else if (strcmp(argval[0], "about") == 0 && !inBackground) {
             about();
-        }
-        else if (strcmp(argval[0], "pwd") == 0 && !inBackground)
-        {
+        } else if (strcmp(argval[0], "pwd") == 0 && !inBackground) {
             function_pwd(cwd, 1);
-        }
-        else if (strcmp(argval[0], "cd") == 0 && !inBackground)
-        {
+        } else if (strcmp(argval[0], "cd") == 0 && !inBackground) {
             char* path = argval[1];
             function_cd(path);
-        }
-        else if (strcmp(argval[0], "mkdir") == 0 && !inBackground)
-        {
+        } else if (strcmp(argval[0], "mkdir") == 0 && !inBackground) {
             char* foldername = argval[1];
             function_mkdir(foldername);
-        }
-        else if (strcmp(argval[0], "rmdir") == 0 && !inBackground)
-        {
+        } else if (strcmp(argval[0], "rmdir") == 0 && !inBackground) {
             char* foldername = argval[1];
             function_rmdir(foldername);
-        }
-        else if (strcmp(argval[0], "clear") == 0 && !inBackground)
-        {
+        } else if (strcmp(argval[0], "clear") == 0 && !inBackground) {
             function_clear();
-        }
-        else if (strcmp(argval[0], "ls") == 0 && !inBackground)
-        {
+        } else if (strcmp(argval[0], "ls") == 0 && !inBackground) {
             char* optional = argval[1];
-            if (strcmp(optional, "-l") == 0 && !inBackground)
-            {
+            if (optional != NULL && strcmp(optional, "-l") == 0) {
                 function_lsl();
-            }
-            else
-            {
+            } else {
                 function_ls();
             }
-        }
-         else if (strcmp(argval[0], "cat") == 0 && !inBackground)
-        {
+        } else if (strcmp(argval[0], "cat") == 0 && !inBackground) {
             char* filename = argval[1];
-            if (filename != NULL)
-            {
+            if (filename != NULL) {
                 function_cat(filename);
-            }
-            else
-            {
+            } else {
                 printf("Error: Missing filename for cat command.\n");
             }
-        }
-         else if (strcmp(argval[0], "grep") == 0 && !inBackground)
-        {
-            if (argcount > 1 && strlen(argval[1]) > 0)  // Check if filename is provided
-            {
-                function_grep(argcount, argval);  // Call the grep function
-            }
-            else
-            {
+        } else if (strcmp(argval[0], "grep") == 0 && !inBackground) {
+            if (argcount > 1 && strlen(argval[1]) > 0) {
+                function_grep(argcount, argval);
+            } else {
                 printf("grep: invalid file name: empty string\n");
             }
-        }     
-        else if (strcmp(argval[0], "wc") == 0 && !inBackground)
-        {
+        } else if (strcmp(argval[0], "wc") == 0 && !inBackground) {
             char* filename = argval[1];
-            if (filename != NULL)
-            {
-                function_wc(filename);  // Call the wc function
-            }
-            else
-            {
+            if (filename != NULL) {
+                function_wc(filename);
+            } else {
                 printf("Error: Missing filename for wc command.\n");
             }
-        }
-         else if (strcmp(argval[0], "cp") == 0 && !inBackground)
-        {
+        } else if (strcmp(argval[0], "cp") == 0 && !inBackground) {
             char* file1 = argval[1];
             char* file2 = argval[2];
-            if (argcount > 2 && strlen(file1) > 0 && strlen(file2) > 0)
-            {
+            if (argcount > 2 && strlen(file1) > 0 && strlen(file2) > 0) {
                 function_cp(file1, file2);
-            }
-            else
-            {
+            } else {
                 printf("+--- Error in cp : insufficient parameters\n");
             }
-        }
-        else if (strcmp(argval[0], "mv") == 0 && !inBackground)
-        {
+        } else if (strcmp(argval[0], "mv") == 0 && !inBackground) {
             char* source = argval[1];
             char* destination = argval[2];
-            if (argcount > 2 && strlen(source) > 0 && strlen(destination) > 0)
-            {
-                function_mv(source, destination);  // Call the mv function
-            }
-            else
-            {
+            if (argcount > 2 && strlen(source) > 0 && strlen(destination) > 0) {
+                function_mv(source, destination);
+            } else {
                 printf("+--- Error in mv: insufficient parameters\n");
             }
-        }       
-        else if (strcmp(argval[0], "rm") == 0 && !inBackground)
-        {
+        } else if (strcmp(argval[0], "rm") == 0 && !inBackground) {
             char* filename = argval[1];
-            if (argcount > 1 && strlen(filename) > 0)
-            {
-                function_rm(filename);  // Call the rm function
-            }
-            else
-            {
+            if (argcount > 1 && strlen(filename) > 0) {
+                function_rm(filename);
+            } else {
                 printf("+--- Error in rm: Missing filename\n");
             }
-        }
-                else if (strcmp(argval[0], "head") == 0 && !inBackground)
-        {
+        } else if (strcmp(argval[0], "head") == 0 && !inBackground) {
             int lines = 10; // Default 10 lines
             char* filename = argval[1];
             if (argcount > 2 && strcmp(argval[1], "-n") == 0) {
@@ -511,9 +701,7 @@ int main(int argc, char* argv[])
             } else {
                 printf("Error: Missing filename for head command.\n");
             }
-        }
-        else if (strcmp(argval[0], "tail") == 0 && !inBackground)
-        {
+        } else if (strcmp(argval[0], "tail") == 0 && !inBackground) {
             int lines = 10; // Default 10 lines
             char* filename = argval[1];
             if (argcount > 2 && strcmp(argval[1], "-n") == 0) {
@@ -525,42 +713,35 @@ int main(int argc, char* argv[])
             } else {
                 printf("Error: Missing filename for tail command.\n");
             }
-        }
-        else if (strcmp(argval[0], "touch") == 0 && !inBackground)
-        {
+        } else if (strcmp(argval[0], "touch") == 0 && !inBackground) {
             char* filename = argval[1];
             if (filename != NULL) {
                 function_touch(filename);
             } else {
                 printf("Error: Missing filename for touch command.\n");
             }
-        }
-        else if (strcmp(argval[0], "find") == 0 && !inBackground)
-        {
-            char* dirname = ".";  // Default to current directory
+        } else if (strcmp(argval[0], "find") == 0 && !inBackground) {
+            char* dirname = "."; // Default to current directory
             char* pattern = argval[1];
             if (argcount > 2) {
                 dirname = argval[1];
                 pattern = argval[2];
             }
             function_find(dirname, pattern);
-        }
-        else if (strcmp(argval[0], "tree") == 0 && !inBackground)
-        {
+        } else if (strcmp(argval[0], "tree") == 0 && !inBackground) {
             char* path = argval[1];
             if (path == NULL) path = ".";
             function_tree(path, 0);
-        }
-        else if (strcmp(argval[0], "df") == 0 && !inBackground)
-        {
+        } else if (strcmp(argval[0], "df") == 0 && !inBackground) {
             function_df();
-        }
-        else
-        {
+        } else {
             executable();
         }
     }
 }
+
+
+
 /*get input containing spaces and tabs and store it in argval*/
 void getInput()
 {
@@ -618,6 +799,10 @@ void function_ls()
     }
 
 }
+
+
+
+
 void function_cat(char* filename) {
     FILE *file = fopen(filename, "r");
     if (file == NULL) {
@@ -775,6 +960,7 @@ void function_rm(char* filename)
         perror(RED "+--- Error in rm: " RESET);
     }
 }
+
  // Next 2 functions are called by executable() */
 /* use execvp to run the command, check path, and handle erors*/
 void runprocess(char * cli, char* args[], int count)
@@ -1076,21 +1262,17 @@ int function_exit()
     return 0; // return 0 to parent process in run.c
 }
 
-/* Implement pwd function in shell - 1 prints, 0 stores*/
-void function_pwd(char* cwdstr,int command)
-{
+void function_pwd(char* cwdstr, int command) {
     char temp[BUFSIZE];
-    char* path=getcwd(temp, sizeof(temp));
-    if(path != NULL)
-    {
-        strcpy(cwdstr,temp);
-        if(command==1)  // check if pwd is to be printed
-        {
-            printf("%s\n",cwdstr);
+    char* path = getcwd(temp, sizeof(temp));
+    if (path != NULL) {
+        strcpy(cwdstr, temp);
+        if (command == 1) { // Check if pwd is to be printed
+            printf("%s%s%s\n", CYAN, cwdstr, RESET); // Apply color
         }
+    } else {
+        perror("+--- Error in getcwd() : ");
     }
-    else perror("+--- Error in getcwd() : ");
-
 }
 
 void screenfetch() {

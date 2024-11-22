@@ -1,3 +1,4 @@
+
 # 🐚 `csh` - A Custom Shell in C
 
 Welcome to **`csh`**, a custom shell written in C that brings the power of basic UNIX-like commands right to your fingertips! Designed to provide a smooth and intuitive command-line experience, `csh` supports essential file and text manipulation commands, making it a great project for exploring low-level system programming.
@@ -105,6 +106,36 @@ todo delete 1
 ```
 ![todo command output](images/todo.jpeg)
 
+### `touch` - create a file
+```bash
+touch filename 
+```
+![touch command output](images/touch.jpeg)
+
+
+### `df` - 
+```bash
+df 
+```
+![df command output](images/df.jpeg)
+
+### `head` - output first 5 lines
+```bash
+head filename
+```
+![head command output](images/head.jpeg)
+
+### `tail` - output last 5 lines
+```bash
+tail filename
+```
+![tail command output](images/tail.jpeg)
+
+### `find` - search for patterns within filename
+```bash
+find . "pattern"
+```
+![find command output](images/find.jpeg)
 
 ## 📚 Project Structure
 
