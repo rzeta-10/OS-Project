@@ -584,6 +584,28 @@ UPROGS = \
   ```
 
 ---
+---
+
+### **Example Output**
+Below is the output of running the `set_perm_test` program in the xv6 shell:
+
+#### **If the process exists:**
+```bash
+$ set_perm_test 3 7
+Permissions set for process 3
+```
+
+#### **If the process does not exist:**
+```bash
+$ set_perm_test 999 7
+Error: Unable to set permissions for process 999
+```
+
+#### **Screenshot of Output:**
+
+![Example Output](output.png)
+
+---
 
 
 
