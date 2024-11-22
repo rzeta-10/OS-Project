@@ -103,6 +103,8 @@ extern uint64 sys_mkdir(void);
 extern uint64 sys_close(void);
 extern uint64 sys_ps(void);
 extern uint64 sys_fork2(void);
+extern uint64 sys_get_ppid(void);
+
 
 // An array mapping syscall numbers from syscall.h
 // to the function that handles the system call.
@@ -130,6 +132,8 @@ static uint64 (*syscalls[])(void) = {
 [SYS_close]   sys_close,
 [SYS_ps]     sys_ps,
 [SYS_fork2]    sys_fork2,
+[SYS_get_ppid] sys_get_ppid, // Add this in the appropriate order
+
 };
 
 void
