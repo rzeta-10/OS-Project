@@ -1211,9 +1211,6 @@ void function_lsl()
     }
 }
 
-
-
-
 /* clear the screen*/
 void function_clear()
 {
