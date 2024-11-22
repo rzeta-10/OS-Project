@@ -154,6 +154,8 @@ ps
 ```
 ![ps command output](Project1_xv6CustomizeSystemCalls/images/ps.png)
 
+---
+
 ## The following are the procedures of adding our exemplary system call fork2 to xv6.
 
  ### Add name to `syscall.h`:
@@ -302,6 +304,99 @@ int main() {
 test_fork2
 ```
 ![test_fork2 command output](Project1_xv6CustomizeSystemCalls/images/fork2.png)
+
+---
+
+## The following are the procedures of adding our exemplary system call get_ppid() to xv6.
+
+ ### Add name to `syscall.h`:
+ 
+ ``` 
+ // System call numbers
+#define SYS_fork    1
+..........
+#define SYS_fork2  23
+#define SYS_get_ppid 24 
+ ``` 
+  ### Add function prototype to `defs.h`:
+  ``` 
+  // proc.c
+void            exit(void);
+......
+void            yield(void);
+int             ps ( void ); 
+  ```   
+ 
+ ### Add function prototype to `user.h`:
+  ``` 
+    // system calls
+int fork(void);
+.....
+int uptime(void);
+int get_ppid(void);
+
+   ``` 
+     
+  ### Add function call to `sysproc.c`:
+  
+   ``` 
+uint64
+sys_get_ppid(void)
+{
+    struct proc *p = myproc(); // Get the current process
+    if (p->parent) {
+        return p->parent->pid; // Return parent PID
+    }
+    return -1; // No parent (e.g., init process)
+}
+ 
+   ```
+        
+   ### Add call to `usys.S`:
+   
+   ```
+   .global get_ppid
+get_ppid:
+    li a7, SYS_get_ppid
+    ecall
+    ret
+   ```
+       
+  ### Add call to `syscall.c`:
+   
+   ```   
+extern int sys_chdir(void);
+.....
+extern uint64 sys_get_ppid(void);
+.....
+static int (*syscalls[])(void) = {
+[SYS_fork]    sys_fork,
+.....
+[SYS_fork2]    sys_fork2,
+[SYS_get_ppid] sys_get_ppid,
+};    
+   ```
+  ### Create testing file `get_ppid_test.c` with code shown below:
+   ```
+#include "kernel/types.h"
+#include "kernel/stat.h"
+#include "user/user.h"
+
+int main(void)
+{
+    int ppid = get_ppid();
+    printf("Parent Process ID: %d\n", ppid);
+    exit(0);
+}
+
+  
+   ```
+
+### `get_ppid` - Get PPID of the current running process
+```bash
+get_ppid_test
+```
+![get_ppid_test command output](Project1_xv6CustomizeSystemCalls/images/get_ppid.png)
 
 ---
 
