@@ -602,7 +602,7 @@ Error: Unable to set permissions for process 999
 
 #### **Screenshot of Output:**
 
-![Example Output](output.png)
+![Example Output](Project1_xv6CustomizeSystemCalls/images/output.png)
 
 ---
 
