@@ -132,8 +132,7 @@ static uint64 (*syscalls[])(void) = {
 [SYS_close]   sys_close,
 [SYS_ps]     sys_ps,
 [SYS_fork2]    sys_fork2,
-[SYS_get_ppid] sys_get_ppid, // Add this in the appropriate order
-
+[SYS_get_ppid] sys_get_ppid,
 };
 
 void

@@ -103,10 +103,8 @@ sys_fork2(void)
 {
     int priority;
 
-    // Fetch the priority argument from the user space
-    argint(0, &priority); // No return value check needed
+    argint(0, &priority); 
 
-    // Call the new fork function with the given priority
     return fork_with_priority(priority);
 }
 

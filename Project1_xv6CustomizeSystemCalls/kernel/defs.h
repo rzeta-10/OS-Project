@@ -141,7 +141,7 @@ void            argaddr(int, uint64 *);
 int             fetchstr(uint64, char*, int);
 int             fetchaddr(uint64, uint64*);
 void            syscall();
-int get_ppid(void); // Add below the other prototypes
+int             get_ppid(void);
 
 // trap.c
 extern uint     ticks;
