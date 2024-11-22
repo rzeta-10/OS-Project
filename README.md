@@ -15,7 +15,7 @@ This project was developed as part of a course project for CS3003_Operating Syst
 
 ---
 
-# Question 1: On Progress ⏳
+# Question 1:
 
 ## 🚀 Getting Started
 
