@@ -34,7 +34,7 @@ make qemu
 
  ### Add name to `syscall.h`:
  
- ``` 
+ ```c
  // System call numbers
 #define SYS_fork    1
 ..........
@@ -42,7 +42,7 @@ make qemu
 #define SYS_ps    22
  ``` 
   ### Add function prototype to `defs.h`:
-  ``` 
+  ``` c
   // proc.c
 void            exit(void);
 ......
@@ -51,7 +51,7 @@ int             ps ( void );
   ```   
  
  ### Add function prototype to `user.h`:
-  ``` 
+  ``` c
     // system calls
 int fork(void);
 .....
@@ -61,7 +61,7 @@ int ps ( void );
      
   ### Add function call to `sysproc.c`:
   
-   ``` 
+   ``` c
 uint64
 sys_ps ( void )
 {
@@ -71,7 +71,7 @@ sys_ps ( void )
         
    ### Add call to `usys.S`:
    
-   ```
+   ```c
   .global ps
  ps:
  li a7, SYS_ps
@@ -81,7 +81,7 @@ sys_ps ( void )
        
   ### Add call to `syscall.c`:
    
-   ```   
+   ``` c
 extern int sys_chdir(void);
 .....
 extern int sys_ps(void);
@@ -97,7 +97,7 @@ static int (*syscalls[])(void) = {
      
    ### Add code to `proc.c`:
     
-   ``` 
+   ``` c
     //current process status
 int
 ps()
@@ -131,7 +131,7 @@ return 22;
    ``` 
  
   ### Create testing file `ps.c` with code shown below:
-   ```
+   ```c
 #include "kernel/types.h"
 #include "kernel/stat.h"
 #include "user/user.h"
@@ -160,7 +160,7 @@ ps
 
  ### Add name to `syscall.h`:
  
- ``` 
+ ``` c
  // System call numbers
 #define SYS_fork    1
 ..........
@@ -169,7 +169,7 @@ ps
  ``` 
  
  ### Add function prototype to `user.h`:
-  ``` 
+  ``` c
     // system calls
 int fork(void);
 .....
@@ -179,7 +179,7 @@ int fork2(int priority);
      
   ### Add function call to `sysproc.c`:
   
-   ``` 
+   ``` c
 uint64
 sys_fork2(void)
 {
@@ -194,7 +194,7 @@ sys_fork2(void)
         
    ### Add call to `usys.S`:
    
-   ```
+   ```c
   .global fork2
 fork2:
  li a7, SYS_fork2
@@ -204,7 +204,7 @@ fork2:
        
   ### Add call to `syscall.c`:
    
-   ```   
+   ```   c
 extern int sys_chdir(void);
 .....
 extern uint64 sys_fork2(void);
@@ -217,12 +217,12 @@ static int (*syscalls[])(void) = {
 };    
    ```
    ### Add code to `proc.c`:
-   ```   
+   ```   c
     int fork_with_priority(int priority);
    ```
    ### Add code to `proc.c`:
     
-   ``` 
+   ``` c
 int fork_with_priority(int priority) {
     struct proc *np;
     struct proc *curproc = myproc();
@@ -270,7 +270,7 @@ int fork_with_priority(int priority) {
    ``` 
  
   ### Create testing file `test_fork2` with code shown below:
-   ```
+   ```c
 #include "../kernel/types.h"
 #include "user.h"
 #include "printf.h"
@@ -311,7 +311,7 @@ test_fork2
 
  ### Add name to `syscall.h`:
  
- ``` 
+ ``` c
  // System call numbers
 #define SYS_fork    1
 ..........
@@ -319,7 +319,7 @@ test_fork2
 #define SYS_get_ppid 24 
  ``` 
   ### Add function prototype to `defs.h`:
-  ``` 
+  ``` c
   // proc.c
 void            exit(void);
 ......
@@ -328,7 +328,7 @@ int             ps ( void );
   ```   
  
  ### Add function prototype to `user.h`:
-  ``` 
+  ``` c
     // system calls
 int fork(void);
 .....
@@ -339,7 +339,7 @@ int get_ppid(void);
      
   ### Add function call to `sysproc.c`:
   
-   ``` 
+   ``` c
 uint64
 sys_get_ppid(void)
 {
@@ -354,7 +354,7 @@ sys_get_ppid(void)
         
    ### Add call to `usys.S`:
    
-   ```
+   ```c
    .global get_ppid
 get_ppid:
     li a7, SYS_get_ppid
@@ -364,7 +364,7 @@ get_ppid:
        
   ### Add call to `syscall.c`:
    
-   ```   
+   ```   c
 extern int sys_chdir(void);
 .....
 extern uint64 sys_get_ppid(void);
@@ -377,7 +377,7 @@ static int (*syscalls[])(void) = {
 };    
    ```
   ### Create testing file `get_ppid_test.c` with code shown below:
-   ```
+   ```c
 #include "kernel/types.h"
 #include "kernel/stat.h"
 #include "user/user.h"
@@ -558,9 +558,8 @@ UPROGS = \
 
 ## **Build and Test**
 
-1. **Rebuild xv6:**
+1. **Build xv6:**
    ```bash
-   make clean
    make qemu
    ```
 
