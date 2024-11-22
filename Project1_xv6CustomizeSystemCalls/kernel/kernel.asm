@@ -6177,7 +6177,7 @@ argstr(int n, char *buf, int max)
     800029de:	8082                	ret
 
 00000000800029e0 <syscall>:
-
+[SYS_get_ppid] sys_get_ppid,
 };
 
 void
@@ -6527,13 +6527,11 @@ sys_fork2(void)
     80002c00:	1000                	addi	s0,sp,32
     int priority;
 
-    // Fetch the priority argument from the user space
-    argint(0, &priority); // No return value check needed
+    argint(0, &priority); 
     80002c02:	fec40593          	addi	a1,s0,-20
     80002c06:	4501                	li	a0,0
     80002c08:	d71ff0ef          	jal	80002978 <argint>
 
-    // Call the new fork function with the given priority
     return fork_with_priority(priority);
     80002c0c:	fec42503          	lw	a0,-20(s0)
     80002c10:	82fff0ef          	jal	8000243e <fork_with_priority>
