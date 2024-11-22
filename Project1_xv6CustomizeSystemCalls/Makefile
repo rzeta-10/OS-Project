@@ -142,6 +142,7 @@ UPROGS=\
 	$U/_ps\
 	$U/_test_fork2 \
 	$U/_get_ppid_test\
+	$U/_set_perm_test\
 
 fs.img: mkfs/mkfs README $(UPROGS)
 	mkfs/mkfs fs.img README $(UPROGS)

@@ -5,6 +5,7 @@
 #include "memlayout.h"
 #include "spinlock.h"
 #include "proc.h"
+extern struct proc proc[];
 
 uint64
 sys_exit(void)
@@ -14,6 +15,28 @@ sys_exit(void)
   exit(n);
   return 0;  // not reached
 }
+uint64
+sys_set_perm(void)
+{
+    int pid, perm_flags;
+
+    // Retrieve arguments using argint
+    argint(0, &pid);
+    argint(1, &perm_flags);
+
+    struct proc *p;
+
+    // Loop through the process table to find the process with the given PID
+    for (p = proc; p < &proc[NPROC]; p++) {
+        if (p->pid == pid) {
+            p->perm_flags = perm_flags;  // Set the permission flags
+            return 0;  // Success
+        }
+    }
+
+    return -1;  // Process not found
+}
+
 
 uint64
 sys_getpid(void)

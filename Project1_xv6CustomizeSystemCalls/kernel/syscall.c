@@ -104,6 +104,8 @@ extern uint64 sys_close(void);
 extern uint64 sys_ps(void);
 extern uint64 sys_fork2(void);
 extern uint64 sys_get_ppid(void);
+extern uint64 sys_set_perm(void);
+
 
 
 // An array mapping syscall numbers from syscall.h
@@ -133,6 +135,8 @@ static uint64 (*syscalls[])(void) = {
 [SYS_ps]     sys_ps,
 [SYS_fork2]    sys_fork2,
 [SYS_get_ppid] sys_get_ppid,
+[SYS_set_perm] sys_set_perm,
+
 };
 
 void

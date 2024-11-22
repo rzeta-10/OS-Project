@@ -120,3 +120,8 @@ get_ppid:
     li a7, SYS_get_ppid
     ecall
     ret
+.global set_perm
+set_perm:
+    li a7, SYS_set_perm
+    ecall
+    ret

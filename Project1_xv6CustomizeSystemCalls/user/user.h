@@ -24,7 +24,8 @@ char* sbrk(int);
 int sleep(int);
 int uptime(void);
 int fork2(int priority);
-int get_ppid(void); // Add below the other system call prototypes
+int get_ppid(void); 
+int set_perm(int pid, int perm_flags);
 
 
 // ulib.c

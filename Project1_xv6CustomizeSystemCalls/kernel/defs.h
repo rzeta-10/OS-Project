@@ -142,6 +142,8 @@ int             fetchstr(uint64, char*, int);
 int             fetchaddr(uint64, uint64*);
 void            syscall();
 int             get_ppid(void);
+int             set_perm(int pid, int perm_flags);  // Kernel-side function
+
 
 // trap.c
 extern uint     ticks;
