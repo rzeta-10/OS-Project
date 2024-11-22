@@ -109,3 +109,13 @@ sys_fork2(void)
     // Call the new fork function with the given priority
     return fork_with_priority(priority);
 }
+
+uint64
+sys_get_ppid(void)
+{
+    struct proc *p = myproc(); // Get the current process
+    if (p->parent) {
+        return p->parent->pid; // Return parent PID
+    }
+    return -1; // No parent (e.g., init process)
+}
