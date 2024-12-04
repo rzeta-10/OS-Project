@@ -621,13 +621,21 @@ Welcome to **`csh`**, a custom shell written in C that brings the power of basic
 
 ## ✨ Features
 
-- **Built-in Commands**: 
-  - **`ls`** - List directory contents
-  - **`cat`** - Display file contents
-  - **`grep`** - Search for patterns within files
-  - **`wc`** - Count words, lines, and characters in files
-  - **`mv`** - Move or rename files
-  - **`rm`** - Remove files
+### Built-in Commands:
+- **`ls`** - List directory contents
+- **`cat`** - Display file contents
+- **`grep`** - Search for patterns within files
+- **`wc`** - Count words, lines, and characters in files
+- **`mv`** - Move or rename files
+- **`rm`** - Remove files
+- **`date`** - Display the current date and time
+- **`calc`** - Perform arithmetic calculations
+- **`todo`** - Manage a to-do list
+- **`touch`** - Create a file
+- **`df`** - Displays disk memory usage
+- **`head`** - Output first 5 lines of a file
+- **`tail`** - Output last 5 lines of a file
+- **`find`** - Search for patterns within filenames
 
 ## 🚀 Getting Started
 
