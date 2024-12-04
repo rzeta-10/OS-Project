@@ -1,4 +1,3 @@
-
 # 🐚 `csh` - A Custom Shell in C
 
 Welcome to **`csh`**, a custom shell written in C that brings the power of basic UNIX-like commands right to your fingertips! Designed to provide a smooth and intuitive command-line experience, `csh` supports essential file and text manipulation commands, making it a great project for exploring low-level system programming.
