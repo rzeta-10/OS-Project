@@ -125,11 +125,15 @@ uint64
 sys_fork2(void)
 {
     int priority;
+    printf("sys_fork2 called by PID: %d\n", myproc()->pid);
 
-    argint(0, &priority); 
+    argint(0, &priority);
+
+    printf("sys_fork2 priority: %d\n", priority);
 
     return fork_with_priority(priority);
 }
+
 
 uint64
 sys_get_ppid(void)
